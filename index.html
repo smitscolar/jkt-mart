@@ -3,65 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JKT MART — Sistem Kasir</title>
+<title>JKT MART — Sistem Kasir Live</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--blue:#1A237E;--red:#D32F2F;--green:#2E7D32;--orange:#F57C00;--border:#dee2e6;--muted:#6c757d;--white:#fff}
+:root{--blue:#1A237E;--red:#D32F2F;--green:#2E7D32;--orange:#F57C00;--border:#dee2e6;--muted:#6c757d}
 body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f5;font-size:13px}
-
-/* LOGIN */
-#loginWrap{position:fixed;inset:0;background:linear-gradient(135deg,#1A237E 0%,#283593 100%);display:flex;align-items:center;justify-content:center;z-index:999}
+#loginWrap{position:fixed;inset:0;background:linear-gradient(135deg,#1A237E,#283593);display:flex;align-items:center;justify-content:center;z-index:999}
 .lbox{background:#fff;border-radius:16px;padding:36px 32px;width:340px;max-width:93vw;box-shadow:0 10px 40px rgba(0,0,0,.3)}
 .lbox h1{text-align:center;font-size:26px;font-weight:700;color:var(--blue);margin-bottom:4px}
 .lbox h1 span{color:var(--red)}
-.lbox p{text-align:center;font-size:12px;color:var(--muted);margin-bottom:20px}
-.lbox label{display:block;font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
-.lbox input{width:100%;height:40px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:13px;margin-bottom:14px;outline:none;transition:border .2s}
+.lbox p{text-align:center;font-size:12px;color:var(--muted);margin-bottom:16px}
+.lst{text-align:center;font-size:11px;padding:6px 10px;border-radius:6px;margin-bottom:12px;background:#fff3e0;color:#e65100}
+.lst.ok{background:#e8f5e9;color:#2e7d32}
+.lbox label{display:block;font-size:10px;font-weight:700;color:var(--muted);margin-bottom:3px;text-transform:uppercase}
+.lbox input{width:100%;height:40px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:13px;margin-bottom:13px;outline:none}
 .lbox input:focus{border-color:var(--blue)}
-.lbox button{width:100%;height:44px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.5px}
-.lbox button:active{opacity:.85}
-.lerr{color:var(--red);font-size:12px;text-align:center;margin-top:10px;display:none;padding:8px;background:#ffebee;border-radius:6px}
-.lhint{text-align:center;font-size:11px;color:var(--muted);margin-top:14px;padding:8px;background:#f5f5f5;border-radius:6px}
+.lbtn{width:100%;height:44px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer}
+.lbtn:disabled{opacity:.6;cursor:not-allowed}
+.lerr{color:var(--red);font-size:12px;text-align:center;margin-top:10px;padding:8px;background:#ffebee;border-radius:6px;display:none}
+.lhint{text-align:center;font-size:11px;color:var(--muted);margin-top:12px;padding:8px;background:#f5f5f5;border-radius:6px}
 
-/* APP */
 #app{display:none;flex-direction:column;height:100vh}
 .topbar{background:var(--blue);color:#fff;padding:0 14px;height:48px;display:flex;align-items:center;gap:10px;flex-shrink:0}
 .topbar h2{font-size:16px;font-weight:700}.topbar h2 span{color:#EF5350}
 .topbar-r{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11px}
-.topbar-r #jam{font-family:monospace}
+#jam{font-family:monospace}
+.dbbadge{font-size:10px;padding:2px 8px;border-radius:10px;background:#e8f5e9;color:#1b5e20}
+.dbbadge.off{background:#fff3e0;color:#e65100}
 .logoutbtn{background:rgba(255,255,255,.2);border:none;color:#fff;padding:4px 10px;border-radius:12px;cursor:pointer;font-size:11px}
 
 .layout{display:flex;flex:1;overflow:hidden}
-
-/* SIDEBAR */
-.sidebar{width:180px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
-.nsec{font-size:10px;color:var(--muted);padding:10px 12px 3px;text-transform:uppercase;font-weight:600;letter-spacing:.05em}
+.sidebar{width:178px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+.nsec{font-size:10px;color:var(--muted);padding:10px 12px 3px;text-transform:uppercase;font-weight:600}
 .ni{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;font-size:12px;color:var(--muted);border-left:3px solid transparent}
 .ni:hover{background:#f5f5f5;color:#333}
 .ni.on{background:#e8eaf6;color:var(--blue);border-left-color:var(--blue);font-weight:600}
 .ni .ic{width:18px;text-align:center;font-size:14px}
 .nbadge{background:var(--red);color:#fff;font-size:9px;padding:1px 5px;border-radius:8px;margin-left:auto}
-.sfoot{margin-top:auto;padding:10px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--muted)}
+.sfoot{margin-top:auto;padding:10px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--muted);line-height:1.6}
 
-/* CONTENT */
 .content{flex:1;overflow:hidden;display:flex;flex-direction:column}
 .tab{display:none;flex:1;overflow:hidden;flex-direction:column}
 .tab.on{display:flex}
 .phead{padding:10px 14px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .phead h3{font-size:13px;font-weight:600;color:var(--blue);display:flex;align-items:center;gap:6px}
 
-/* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 11px;border-radius:6px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:#fff;color:#333;white-space:nowrap}
 .btn:active{opacity:.8}
 .bb{background:var(--blue);color:#fff;border-color:var(--blue)}
 .bg{background:var(--green);color:#fff;border-color:var(--green)}
 .br{background:var(--red);color:#fff;border-color:var(--red)}
-.bo{background:var(--orange);color:#fff;border-color:var(--orange)}
 .bsm{height:26px;padding:0 8px;font-size:11px}
 
-/* DASHBOARD */
 .dscroll{flex:1;overflow-y:auto;padding:12px}
-.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:12px}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px;margin-bottom:12px}
 .mc{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;position:relative}
 .mc .lb{font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:3px}
 .mc .vl{font-size:20px;font-weight:700}
@@ -74,19 +70,18 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f5;font-size:13px}
 .pill{font-size:10px;padding:2px 7px;border-radius:8px;font-weight:500}
 .pd{background:#ffebee;color:#c62828}.po{background:#e8f5e9;color:#1b5e20}.pw{background:#fff8e1;color:#e65100}.pb{background:#e3f2fd;color:#1565c0}
 
-/* POS */
 .poswrap{display:flex;flex:1;overflow:hidden}
 .posleft{flex:1;display:flex;flex-direction:column;border-right:1px solid var(--border)}
-.posright{width:280px;display:flex;flex-direction:column;background:#fff}
-.scanzone{padding:10px 12px;background:#fff;border-bottom:1px solid var(--border);flex-shrink:0}
-.scanrow{display:flex;gap:6px}
-.scanin{flex:1;height:34px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:13px;outline:none}
+.posright{width:278px;display:flex;flex-direction:column;background:#fff}
+.scanzone{padding:9px 11px;background:#fff;border-bottom:1px solid var(--border);flex-shrink:0}
+.scanrow{display:flex;gap:5px}
+.scanin{flex:1;height:33px;border:1px solid var(--border);border-radius:6px;padding:0 9px;font-size:13px;outline:none}
 .scanin:focus{border-color:var(--blue)}
 .scanst{font-size:11px;color:var(--muted);margin-top:4px}
-.catbar{display:flex;gap:4px;padding:7px 10px;overflow-x:auto;border-bottom:1px solid var(--border);flex-shrink:0}
+.catbar{display:flex;gap:4px;padding:6px 9px;overflow-x:auto;border-bottom:1px solid var(--border);flex-shrink:0}
 .catbtn{height:24px;padding:0 9px;border-radius:16px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:#fff;white-space:nowrap}
 .catbtn.on{background:var(--blue);color:#fff;border-color:var(--blue)}
-.pgrid{flex:1;overflow-y:auto;padding:8px;display:grid;grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:6px;align-content:start}
+.pgrid{flex:1;overflow-y:auto;padding:8px;display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;align-content:start}
 .pcard{background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px;cursor:pointer;transition:border-color .1s}
 .pcard:hover{border-color:var(--blue);background:#f5f7ff}
 .pcard.ox{opacity:.4;pointer-events:none}
@@ -99,30 +94,28 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f5;font-size:13px}
 .cbadge{background:var(--red);color:#fff;font-size:9px;padding:1px 5px;border-radius:8px}
 .cbody{flex:1;overflow-y:auto;padding:6px 8px}
 .cempty{text-align:center;padding:20px;color:var(--muted);font-size:12px}
-.citem{display:flex;align-items:center;gap:6px;padding:5px;border-radius:7px;background:#fff;margin-bottom:4px;border:1px solid var(--border)}
+.citem{display:flex;align-items:center;gap:5px;padding:5px;border-radius:7px;background:#fff;margin-bottom:4px;border:1px solid var(--border)}
 .cin{flex:1;min-width:0}
 .cnm{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cpr{font-size:10px;color:var(--muted)}
 .qc{display:flex;align-items:center;gap:3px}
 .qb{width:20px;height:20px;border-radius:4px;border:1px solid var(--border);background:#f0f2f5;cursor:pointer;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
-.qb:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.qb:hover{background:var(--blue);color:#fff}
 .qv{font-size:12px;font-weight:700;min-width:18px;text-align:center}
-.cdel{color:var(--muted);cursor:pointer;font-size:13px;padding:2px}
+.cdel{color:var(--muted);cursor:pointer;font-size:13px}
 .cdel:hover{color:var(--red)}
 .cfoot{padding:9px 11px;border-top:1px solid var(--border);flex-shrink:0}
 .crow{display:flex;justify-content:space-between;font-size:12px;padding:2px 0}
 .ctot{font-size:14px;font-weight:700;padding:6px 0;border-top:1px solid var(--border);margin-top:4px;display:flex;justify-content:space-between;color:var(--blue)}
 .payrow{display:flex;gap:5px;margin:6px 0}
-.paysel{flex:1;height:28px;border:1px solid var(--border);border-radius:6px;font-size:11px;padding:0 6px;background:#fff}
+.paysel{flex:1;height:28px;border:1px solid var(--border);border-radius:6px;font-size:11px;padding:0 5px;background:#fff}
 .payin{flex:2;height:28px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px;outline:none}
 .payin:focus{border-color:var(--blue)}
 .kem{padding:6px 8px;border-radius:6px;font-size:12px;font-weight:600;text-align:center;margin-bottom:5px;display:none}
 .kem.ok{background:#e8f5e9;color:var(--green)}.kem.er{background:#ffebee;color:var(--red)}
 .paybtn{width:100%;height:36px;background:var(--blue);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer}
-.paybtn:active{opacity:.85}
 
-/* TABLE */
-.tbar{padding:9px 12px;display:flex;gap:6px;align-items:center;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0}
+.tbar{padding:8px 11px;display:flex;gap:6px;align-items:center;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0}
 .srch{flex:1;height:30px;border:1px solid var(--border);border-radius:6px;padding:0 9px;font-size:12px;outline:none}
 .srch:focus{border-color:var(--blue)}
 .twrap{flex:1;overflow-y:auto}
@@ -131,7 +124,6 @@ th{font-size:10px;color:var(--muted);text-align:left;padding:7px 9px;border-bott
 td{font-size:12px;padding:7px 9px;border-bottom:1px solid #f0f2f5;vertical-align:middle}
 tr:hover td{background:#f8f9fa}
 
-/* MODAL */
 .mbg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200}
 .mbox{background:#fff;border-radius:12px;padding:18px;width:360px;max-width:92vw;max-height:88vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,.2)}
 .mhead{display:flex;align-items:center;gap:8px;margin-bottom:14px}
@@ -144,33 +136,30 @@ tr:hover td{background:#f8f9fa}
 .fr2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .mfoot{display:flex;gap:6px;justify-content:flex-end;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
 
-/* STRUK */
 .struk{background:#fff;padding:14px;max-width:230px;margin:0 auto;font-family:monospace;font-size:10px;border:1px solid #ddd;border-radius:6px}
 .stit{text-align:center;font-size:13px;font-weight:700;margin-bottom:3px}
 .ssub{text-align:center;font-size:9px;color:#666;margin-bottom:5px;line-height:1.5}
 .shr{border:none;border-top:1px dashed #ccc;margin:5px 0}
 .srow{display:flex;justify-content:space-between;margin-bottom:1px}
 .sbold{font-weight:700;font-size:11px}
-.sfoot{text-align:center;color:#888;font-size:9px;margin-top:6px;line-height:1.5}
+.sfoot2{text-align:center;color:#888;font-size:9px;margin-top:6px;line-height:1.5}
 
-/* CHART */
 .chwrap{height:100px;display:flex;align-items:flex-end;gap:5px;margin-top:8px}
 .bar{flex:1;border-radius:4px 4px 0 0;position:relative;min-width:14px}
 .blb{position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--muted);white-space:nowrap}
 .bvl{position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:9px;white-space:nowrap;font-weight:500}
 
-/* TOAST */
 .toast{position:fixed;bottom:16px;right:16px;padding:9px 16px;border-radius:8px;font-size:12px;font-weight:600;z-index:999;display:none}
 .tok{background:var(--green);color:#fff}.ter{background:var(--red);color:#fff}.tinf{background:var(--blue);color:#fff}
 
-/* STOK */
 .hitem{display:flex;align-items:center;gap:10px;padding:8px 11px;background:#fff;border:1px solid var(--border);border-radius:8px;margin-bottom:6px}
 .hico{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
-
-/* SETTING */
 .sc{background:#fff;border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px}
 .sc h4{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:10px;text-transform:uppercase}
 .srow2{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f2f5;font-size:12px}
+
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -179,27 +168,27 @@ tr:hover td{background:#f8f9fa}
 <div id="loginWrap">
   <div class="lbox">
     <h1>JKT <span>MART</span></h1>
-    <p>Sistem Kasir & Manajemen Toko Sembako</p>
-    <label>Username Admin</label>
-    <input type="text" id="lu" value="admin" autocomplete="username"/>
+    <p>Sistem Kasir & Manajemen Toko — Live</p>
+    <div class="lst" id="lst">🔄 Menghubungkan ke server...</div>
+    <label>Username</label>
+    <input type="text" id="lu" placeholder="Username" autocomplete="username"/>
     <label>Password</label>
-    <input type="password" id="lp" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"/>
-    <button onclick="login()">🔐 MASUK</button>
-    <div class="lerr" id="lerr">Username atau password salah!</div>
-    <div class="lhint">Demo: <strong>admin</strong> / <strong>jktmart2025</strong></div>
+    <input type="password" id="lp" placeholder="Password" onkeydown="if(event.key==='Enter')login()"/>
+    <button class="lbtn" id="lbtn" onclick="login()">🔐 MASUK</button>
+    <div class="lerr" id="lerr"></div>
+    <div class="lhint">Default: <strong>admin</strong> / <strong>jktmart2025</strong></div>
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- APP -->
 <div id="app" style="display:none;flex-direction:column;height:100vh">
   <div class="topbar">
     <h2>JKT <span>MART</span></h2>
     <div class="topbar-r">
       <span id="jam"></span>
-      <span style="opacity:.7">👤 <span id="unm">Admin</span></span>
+      <span class="dbbadge" id="dbbadge">☁️ Live</span>
+      <span style="opacity:.7">👤 <span id="unm">-</span></span>
       <button class="logoutbtn" onclick="logout()">Keluar</button>
     </div>
   </div>
@@ -219,19 +208,18 @@ tr:hover td{background:#f8f9fa}
       <div class="ni" id="n-lp" onclick="go('lp')"><span class="ic">📈</span>Laporan</div>
       <div class="nsec">Sistem</div>
       <div class="ni" id="n-pg" onclick="go('pg')"><span class="ic">⚙️</span>Pengaturan</div>
-      <div class="sfoot"><strong style="color:var(--red)">JKT MART v2.0</strong><br>Offline Ready</div>
+      <div class="sfoot"><strong style="color:var(--red)">JKT MART v3.0</strong><br>☁️ Supabase Live<br>Data real-time</div>
     </nav>
     <div class="content">
 
-      <!-- DASHBOARD -->
       <div class="tab on" id="t-db">
-        <div class="phead"><h3>📊 Dashboard Utama</h3><span id="tgl" style="font-size:11px;color:var(--muted)"></span></div>
+        <div class="phead"><h3>📊 Dashboard</h3><span id="tgl" style="font-size:11px;color:var(--muted)"></span></div>
         <div class="dscroll">
           <div class="metrics">
-            <div class="mc"><div class="ic2">💰</div><div class="lb">Omset Hari Ini</div><div class="vl" id="d1">Rp 0</div><div style="font-size:11px;color:var(--muted)" id="d1s">0 transaksi</div></div>
-            <div class="mc"><div class="ic2">🛒</div><div class="lb">Item Terjual</div><div class="vl" id="d2">0</div><div style="font-size:11px;color:var(--muted)">hari ini</div></div>
-            <div class="mc"><div class="ic2">⚠️</div><div class="lb">Stok Kritis</div><div class="vl" style="color:var(--red)" id="d3">0</div><div style="font-size:11px;color:var(--muted)">perlu restock</div></div>
-            <div class="mc"><div class="ic2">💚</div><div class="lb">Laba Kotor</div><div class="vl" style="color:var(--green)" id="d4">Rp 0</div><div style="font-size:11px;color:var(--muted)">hari ini</div></div>
+            <div class="mc"><div class="ic2">💰</div><div class="lb">Omset Hari Ini</div><div class="vl" id="d1">-</div><div style="font-size:11px;color:var(--muted)" id="d1s">-</div></div>
+            <div class="mc"><div class="ic2">🛒</div><div class="lb">Item Terjual</div><div class="vl" id="d2">-</div><div style="font-size:11px;color:var(--muted)">hari ini</div></div>
+            <div class="mc"><div class="ic2">⚠️</div><div class="lb">Stok Kritis</div><div class="vl" style="color:var(--red)" id="d3">-</div><div style="font-size:11px;color:var(--muted)">perlu restock</div></div>
+            <div class="mc"><div class="ic2">💚</div><div class="lb">Laba Kotor</div><div class="vl" style="color:var(--green)" id="d4">-</div><div style="font-size:11px;color:var(--muted)">hari ini</div></div>
           </div>
           <div class="g2">
             <div class="card"><div class="ct">⚠️ Stok Kritis</div><div id="dk"></div></div>
@@ -241,14 +229,13 @@ tr:hover td{background:#f8f9fa}
         </div>
       </div>
 
-      <!-- KASIR -->
       <div class="tab" id="t-ks">
         <div class="poswrap">
           <div class="posleft">
             <div class="scanzone">
-              <div style="font-size:10px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;font-weight:600">🔴 Scan Barcode</div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:5px;font-weight:600;text-transform:uppercase">🔴 Scan Barcode</div>
               <div class="scanrow">
-                <input class="scanin" id="bci" placeholder="Scan atau ketik barcode → Enter" autocomplete="off" onkeydown="if(event.key==='Enter')scan()"/>
+                <input class="scanin" id="bci" placeholder="Scan / ketik barcode → Enter" autocomplete="off" onkeydown="if(event.key==='Enter')scan()"/>
                 <button class="btn bb" onclick="scan()">🔍</button>
               </div>
               <div class="scanst" id="sst">Scanner siap</div>
@@ -277,20 +264,15 @@ tr:hover td{background:#f8f9fa}
         </div>
       </div>
 
-      <!-- PRODUK -->
       <div class="tab" id="t-pr">
-        <div class="phead"><h3>📦 Manajemen Produk</h3><button class="btn bb" onclick="openAddP()">➕ Tambah</button></div>
+        <div class="phead"><h3>📦 Produk</h3><button class="btn bb" onclick="openAddP()">➕ Tambah</button></div>
         <div class="tbar">
           <input class="srch" placeholder="Cari nama / barcode..." oninput="fltP(this.value)"/>
           <select class="srch" style="width:140px" onchange="fltK(this.value)" id="kflt"><option value="">Semua Kategori</option></select>
         </div>
-        <div class="twrap">
-          <table><thead><tr><th>Barcode</th><th>Nama</th><th>Kategori</th><th>H.Beli</th><th>H.Jual</th><th>Stok</th><th>Min</th><th>Status</th><th></th></tr></thead>
-          <tbody id="ptb"></tbody></table>
-        </div>
+        <div class="twrap"><table><thead><tr><th>Barcode</th><th>Nama</th><th>Kategori</th><th>H.Beli</th><th>H.Jual</th><th>Stok</th><th>Min</th><th>Status</th><th></th></tr></thead><tbody id="ptb"></tbody></table></div>
       </div>
 
-      <!-- STOK -->
       <div class="tab" id="t-st">
         <div class="phead"><h3>📋 Manajemen Stok</h3><button class="btn bg" onclick="openSI()">📥 Stok Masuk</button></div>
         <div style="flex:1;overflow-y:auto;padding:12px">
@@ -303,27 +285,23 @@ tr:hover td{background:#f8f9fa}
         </div>
       </div>
 
-      <!-- PO -->
       <div class="tab" id="t-po">
         <div class="phead"><h3>🚚 Purchase Order</h3><button class="btn bb" onclick="buatPO()">➕ Buat PO</button></div>
-        <div style="flex:1;overflow-y:auto;padding:12px" id="powrap"><p style="text-align:center;color:var(--muted);padding:20px;font-size:12px">Belum ada PO. Klik "Buat PO" untuk membuat.</p></div>
+        <div style="flex:1;overflow-y:auto;padding:12px" id="powrap"><p style="text-align:center;color:var(--muted);padding:20px;font-size:12px">Belum ada PO.</p></div>
       </div>
 
-      <!-- SUPPLIER -->
       <div class="tab" id="t-sp">
-        <div class="phead"><h3>🏭 Data Supplier</h3><button class="btn bb" onclick="addSup()">➕ Tambah</button></div>
+        <div class="phead"><h3>🏭 Supplier</h3><button class="btn bb" onclick="addSup()">➕ Tambah</button></div>
         <div style="flex:1;overflow-y:auto;padding:12px" id="spwrap"></div>
       </div>
 
-      <!-- PELANGGAN -->
       <div class="tab" id="t-pl">
-        <div class="phead"><h3>👥 Data Pelanggan</h3><button class="btn bb" onclick="addPel()">➕ Tambah</button></div>
+        <div class="phead"><h3>👥 Pelanggan</h3><button class="btn bb" onclick="addPel()">➕ Tambah</button></div>
         <div style="flex:1;overflow-y:auto;padding:12px" id="plwrap"></div>
       </div>
 
-      <!-- LAPORAN -->
       <div class="tab" id="t-lp">
-        <div class="phead"><h3>📈 Laporan & Analitik</h3>
+        <div class="phead"><h3>📈 Laporan</h3>
           <div style="display:flex;gap:6px">
             <button class="btn br" onclick="expPDF()">📄 PDF</button>
             <button class="btn bg" onclick="expXLS()">📊 Excel</button>
@@ -331,27 +309,21 @@ tr:hover td{background:#f8f9fa}
         </div>
         <div style="flex:1;overflow-y:auto;padding:12px">
           <div class="metrics" style="margin-bottom:12px">
-            <div class="mc"><div class="lb">Omset Bulan Ini</div><div class="vl" id="ro"></div></div>
-            <div class="mc"><div class="lb">Total Transaksi</div><div class="vl" id="rt"></div></div>
-            <div class="mc"><div class="lb">Laba Kotor</div><div class="vl" style="color:var(--green)" id="rl"></div></div>
-            <div class="mc"><div class="lb">Rata-rata/Trx</div><div class="vl" id="ra"></div></div>
+            <div class="mc"><div class="lb">Omset Bulan Ini</div><div class="vl" id="ro">-</div></div>
+            <div class="mc"><div class="lb">Total Transaksi</div><div class="vl" id="rt">-</div></div>
+            <div class="mc"><div class="lb">Laba Kotor</div><div class="vl" style="color:var(--green)" id="rl">-</div></div>
+            <div class="mc"><div class="lb">Rata-rata/Trx</div><div class="vl" id="ra">-</div></div>
           </div>
           <div class="card" style="margin-bottom:10px">
             <div class="ct">📊 Omset 7 Hari Terakhir</div>
             <div class="chwrap" id="chart"></div>
             <div style="height:18px"></div>
           </div>
-          <div class="card" style="margin-bottom:10px">
-            <div class="ct">🗂️ Per Kategori</div><div id="rkat"></div>
-          </div>
-          <div class="card">
-            <div class="ct">🧾 Riwayat Transaksi</div>
-            <div id="rtrx" style="max-height:280px;overflow-y:auto"></div>
-          </div>
+          <div class="card" style="margin-bottom:10px"><div class="ct">🗂️ Per Kategori</div><div id="rkat"></div></div>
+          <div class="card"><div class="ct">🧾 Riwayat Transaksi</div><div id="rtrx" style="max-height:280px;overflow-y:auto"></div></div>
         </div>
       </div>
 
-      <!-- PENGATURAN -->
       <div class="tab" id="t-pg">
         <div class="phead"><h3>⚙️ Pengaturan</h3></div>
         <div style="flex:1;overflow-y:auto;padding:12px">
@@ -363,17 +335,22 @@ tr:hover td{background:#f8f9fa}
             <button class="btn bb bsm" onclick="saveSett()">💾 Simpan</button>
           </div>
           <div class="sc">
-            <h4>🔐 Tambah Admin</h4>
+            <h4>🔐 Tambah User/Kasir</h4>
             <div class="fr2">
               <div><label>Username</label><input class="fi" id="au"/></div>
               <div><label>Password</label><input class="fi" type="password" id="ap"/></div>
             </div>
-            <button class="btn bo bsm" onclick="addAdm()">➕ Tambah Admin</button>
+            <div class="fr"><label>Nama Lengkap</label><input class="fi" id="anm"/></div>
+            <div class="fr"><label>Role</label>
+              <select class="fi" id="arl"><option value="kasir">Kasir</option><option value="owner">Owner</option></select>
+            </div>
+            <button class="btn bb bsm" onclick="addAdm()">➕ Tambah User</button>
+            <div id="admlist" style="margin-top:12px"></div>
           </div>
           <div class="sc">
-            <h4>📱 Info Sistem</h4>
-            <div class="srow2"><span>Versi</span><span>JKT MART v2.0</span></div>
-            <div class="srow2"><span>Mode</span><span class="pill po">Offline Ready</span></div>
+            <h4>🗄️ Status Database</h4>
+            <div class="srow2"><span>Server</span><span style="font-size:11px;color:var(--blue)">Supabase Cloud</span></div>
+            <div class="srow2"><span>Status</span><span class="pill po" id="dbst">Terhubung</span></div>
             <div class="srow2"><span>Total Produk</span><span id="inf-pr">-</span></div>
             <div class="srow2"><span>Total Transaksi</span><span id="inf-tr">-</span></div>
           </div>
@@ -388,23 +365,23 @@ tr:hover td{background:#f8f9fa}
 <div class="mbg" id="mp" style="display:none">
   <div class="mbox">
     <div class="mhead"><h3 id="mpt">Tambah Produk</h3><span class="mx" onclick="closeM('mp')">✕</span></div>
-    <div class="fr"><label>Barcode</label><div style="display:flex;gap:5px"><input class="fi" id="pb" style="flex:1" placeholder="Barcode produk"/><button class="btn bb bsm" onclick="autoBC()">⚡ Auto</button></div></div>
-    <div class="fr"><label>Nama Produk *</label><input class="fi" id="pn" placeholder="Nama lengkap produk"/></div>
+    <div class="fr"><label>Barcode</label><div style="display:flex;gap:5px"><input class="fi" id="pb" style="flex:1"/><button class="btn bb bsm" onclick="autoBC()">⚡ Auto</button></div></div>
+    <div class="fr"><label>Nama Produk *</label><input class="fi" id="pn"/></div>
     <div class="fr"><label>Kategori</label>
       <select class="fi" id="pk"><option>Beras & Sembako</option><option>Minyak Goreng</option><option>Gula & Garam</option><option>Tepung</option><option>Minuman</option><option>Snack</option><option>Rokok</option><option>Sabun & Deterjen</option><option>Lainnya</option></select>
     </div>
     <div class="fr2">
-      <div><label>Harga Beli</label><input class="fi" id="phb" type="number" placeholder="0"/></div>
-      <div><label>Harga Jual</label><input class="fi" id="phj" type="number" placeholder="0"/></div>
+      <div><label>Harga Beli</label><input class="fi" id="phb" type="number"/></div>
+      <div><label>Harga Jual</label><input class="fi" id="phj" type="number"/></div>
     </div>
     <div class="fr2">
-      <div><label>Stok</label><input class="fi" id="ps" type="number" placeholder="0"/></div>
-      <div><label>Stok Min</label><input class="fi" id="pm" type="number" placeholder="5"/></div>
+      <div><label>Stok</label><input class="fi" id="ps" type="number"/></div>
+      <div><label>Stok Min</label><input class="fi" id="pm" type="number" value="5"/></div>
     </div>
     <div class="fr"><label>Satuan</label>
       <select class="fi" id="psat"><option>pcs</option><option>kg</option><option>liter</option><option>dus</option><option>bungkus</option><option>botol</option><option>kaleng</option></select>
     </div>
-    <div class="mfoot"><button class="btn" onclick="closeM('mp')">Batal</button><button class="btn bb" onclick="saveProd()">💾 Simpan</button></div>
+    <div class="mfoot"><button class="btn" onclick="closeM('mp')">Batal</button><button class="btn bb" id="savepbtn" onclick="saveProd()">💾 Simpan</button></div>
   </div>
 </div>
 
@@ -412,13 +389,13 @@ tr:hover td{background:#f8f9fa}
 <div class="mbg" id="msi" style="display:none">
   <div class="mbox">
     <div class="mhead"><h3>📥 Stok Masuk</h3><span class="mx" onclick="closeM('msi')">✕</span></div>
-    <div class="fr"><label>Barcode</label><input class="fi" id="sib" placeholder="Scan atau ketik barcode" oninput="lkpS()"/></div>
+    <div class="fr"><label>Barcode</label><input class="fi" id="sib" placeholder="Scan atau ketik" oninput="lkpS()"/></div>
     <div class="fr"><label>Nama Produk</label><input class="fi" id="sin" readonly style="background:#f8f9fa"/></div>
     <div class="fr2">
-      <div><label>Jumlah Masuk</label><input class="fi" id="siq" type="number" placeholder="0"/></div>
-      <div><label>Harga Beli Baru</label><input class="fi" id="sih" type="number" placeholder="Rp"/></div>
+      <div><label>Jumlah Masuk</label><input class="fi" id="siq" type="number"/></div>
+      <div><label>Harga Beli Baru</label><input class="fi" id="sih" type="number"/></div>
     </div>
-    <div class="fr"><label>Supplier</label><input class="fi" id="sis" placeholder="Nama supplier"/></div>
+    <div class="fr"><label>Supplier</label><input class="fi" id="sis"/></div>
     <div class="mfoot"><button class="btn" onclick="closeM('msi')">Batal</button><button class="btn bg" onclick="saveSI()">✅ Simpan</button></div>
   </div>
 </div>
@@ -426,7 +403,7 @@ tr:hover td{background:#f8f9fa}
 <!-- MODAL STRUK -->
 <div class="mbg" id="msk" style="display:none">
   <div class="mbox">
-    <div class="mhead"><h3>🧾 Struk Pembayaran</h3><span class="mx" onclick="closeM('msk');rstKs()">✕</span></div>
+    <div class="mhead"><h3>🧾 Struk</h3><span class="mx" onclick="closeM('msk');rstKs()">✕</span></div>
     <div id="skout"></div>
     <div class="mfoot">
       <button class="btn" onclick="prtStruk()">🖨️ Cetak</button>
@@ -437,75 +414,96 @@ tr:hover td{background:#f8f9fa}
 
 <script>
 // ============================================================
-// DATA
+// SUPABASE CONFIG
 // ============================================================
-var P = JSON.parse(localStorage.getItem('jm_p')||'null') || [
-  {id:1,bc:'8992388005102',nm:'Beras Ramos 5kg',kat:'Beras & Sembako',hb:55000,hj:65000,stk:50,min:10,sat:'karung',em:'🌾'},
-  {id:2,bc:'8993014042036',nm:'Minyak Goreng Bimoli 2L',kat:'Minyak Goreng',hb:28000,hj:34000,stk:30,min:5,sat:'botol',em:'🫙'},
-  {id:3,bc:'8993014010011',nm:'Gula Pasir 1kg',kat:'Gula & Garam',hb:13000,hj:16000,stk:40,min:10,sat:'kg',em:'🍬'},
-  {id:4,bc:'8996001411173',nm:'Indomie Goreng',kat:'Snack',hb:2500,hj:3500,stk:200,min:50,sat:'pcs',em:'🍜'},
-  {id:5,bc:'8993001120021',nm:'Aqua 600ml',kat:'Minuman',hb:2000,hj:3000,stk:100,min:24,sat:'botol',em:'💧'},
-  {id:6,bc:'8999991010011',nm:'Tepung Terigu 1kg',kat:'Tepung',hb:10000,hj:13000,stk:4,min:10,sat:'kg',em:'🌾'},
-  {id:7,bc:'8999991020022',nm:'Garam Halus 250g',kat:'Gula & Garam',hb:2500,hj:4000,stk:2,min:10,sat:'bungkus',em:'🧂'},
-  {id:8,bc:'8888888000001',nm:'Sabun Lifebuoy',kat:'Sabun & Deterjen',hb:5000,hj:7500,stk:25,min:10,sat:'pcs',em:'🧼'},
-  {id:9,bc:'8888888000002',nm:'Rinso 1kg',kat:'Sabun & Deterjen',hb:18000,hj:22000,stk:15,min:5,sat:'pcs',em:'🫧'},
-  {id:10,bc:'8888888000003',nm:'Susu Indomilk 1L',kat:'Minuman',hb:15000,hj:19000,stk:20,min:6,sat:'liter',em:'🥛'},
-  {id:11,bc:'8888888000004',nm:'Kopi Kapal Api Sachet',kat:'Minuman',hb:1500,hj:2500,stk:80,min:20,sat:'pcs',em:'☕'},
-  {id:12,bc:'8888888000005',nm:'Teh Botol Sosro 450ml',kat:'Minuman',hb:4500,hj:6000,stk:48,min:12,sat:'botol',em:'🍵'},
-];
-var T = JSON.parse(localStorage.getItem('jm_t')||'[]');
-var H = JSON.parse(localStorage.getItem('jm_h')||'[]');
-var A = JSON.parse(localStorage.getItem('jm_a')||'null') || [{u:'admin',p:'jktmart2025',nm:'Administrator'}];
-var SP = JSON.parse(localStorage.getItem('jm_sp')||'[]');
-var PL = JSON.parse(localStorage.getItem('jm_pl')||'[]');
-
-function save(){
-  localStorage.setItem('jm_p',JSON.stringify(P));
-  localStorage.setItem('jm_t',JSON.stringify(T));
-  localStorage.setItem('jm_h',JSON.stringify(H));
-  localStorage.setItem('jm_a',JSON.stringify(A));
-  localStorage.setItem('jm_sp',JSON.stringify(SP));
-  localStorage.setItem('jm_pl',JSON.stringify(PL));
-}
+const SB_URL = 'https://tuhjvpzlencbvyyjwcvs.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1aGp2cHpsZW5jYnZ5eWp3Y3ZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2MzA4NjMsImV4cCI6MjA5ODIwNjg2M30.khLK6yIrLCqeNUoSBxltX2emAACJt5qApROMuPiF1UM';
+let sb, P=[], T=[], H=[], CU=null;
+let SP=JSON.parse(localStorage.getItem('jm_sp')||'[]');
+let PL=JSON.parse(localStorage.getItem('jm_pl')||'[]');
 
 // ============================================================
-// LOGIN — SYNCHRONOUS, TIDAK ADA ASYNC
+// INIT — load Supabase, lalu update login status
 // ============================================================
-function login(){
-  var u=document.getElementById('lu').value.trim();
-  var p=document.getElementById('lp').value;
-  // Pastikan admin default selalu ada
-  if(!A.find(function(x){return x.u==='admin';})) A.push({u:'admin',p:'jktmart2025',nm:'Administrator'});
-  var adm=A.find(function(x){return x.u===u && x.p===p;});
-  if(adm){
-    document.getElementById('loginWrap').style.display='none';
-    var app=document.getElementById('app');
-    app.style.display='flex';
-    document.getElementById('unm').textContent=adm.nm||adm.u;
-    render();
-    return;
+window.addEventListener('load', async function(){
+  var lst = document.getElementById('lst');
+  try {
+    sb = window.supabase.createClient(SB_URL, SB_KEY);
+    // Test ping
+    var {error} = await sb.from('admin').select('id').limit(1);
+    if(error) throw error;
+    lst.className='lst ok';
+    lst.textContent='✅ Server terhubung — siap login';
+  } catch(e){
+    lst.className='lst';
+    lst.textContent='⚠️ Offline — cek koneksi internet';
   }
-  var e=document.getElementById('lerr');
-  e.textContent='Salah! Coba: admin / jktmart2025';
-  e.style.display='block';
-  setTimeout(function(){e.style.display='none';},4000);
+});
+
+// ============================================================
+// LOGIN — cek dari Supabase admin table
+// ============================================================
+async function login(){
+  var u=(document.getElementById('lu').value||'').trim();
+  var p=document.getElementById('lp').value||'';
+  var btn=document.getElementById('lbtn');
+  var err=document.getElementById('lerr');
+  if(!u||!p){err.textContent='Isi username dan password!';err.style.display='block';return;}
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span> Memeriksa...';
+  err.style.display='none';
+  try {
+    var {data,error}=await sb.from('admin').select('*').eq('u',u).eq('p',p).single();
+    if(error||!data) throw new Error('salah');
+    CU=data;
+    document.getElementById('loginWrap').style.display='none';
+    var app=document.getElementById('app');app.style.display='flex';
+    document.getElementById('unm').textContent=data.nm||data.u;
+    await loadAll();
+    toast('Selamat datang, '+(data.nm||data.u)+'! ☁️ Live Mode','tok');
+  } catch(e){
+    err.textContent='Username atau password salah!';
+    err.style.display='block';
+  }
+  btn.disabled=false;btn.innerHTML='🔐 MASUK';
 }
 
 function logout(){
+  CU=null;P=[];T=[];H=[];
   document.getElementById('app').style.display='none';
   document.getElementById('loginWrap').style.display='flex';
   document.getElementById('lp').value='';
 }
 
 // ============================================================
-// NAVIGATION
+// LOAD DATA
+// ============================================================
+async function loadAll(){
+  try {
+    var {data:pd}=await sb.from('produk').select('*').order('nm');
+    if(pd) P=pd;
+    var {data:td}=await sb.from('transaksi').select('*').order('tgl',{ascending:false}).limit(200);
+    if(td) T=td;
+    var {data:hd}=await sb.from('stok_hist').select('*').order('tgl',{ascending:false}).limit(100);
+    if(hd) H=hd;
+    document.getElementById('dbbadge').textContent='☁️ Live';
+    document.getElementById('dbbadge').className='dbbadge';
+  } catch(e){
+    document.getElementById('dbbadge').textContent='⚡ Offline';
+    document.getElementById('dbbadge').className='dbbadge off';
+    document.getElementById('dbst').textContent='Terputus';
+    document.getElementById('dbst').className='pill pd';
+  }
+  rdDb();rdGrid();rdTbl();rdStk();rdLap();rdSp();rdPl();rdAdmList();
+  document.getElementById('inf-pr').textContent=P.length;
+  document.getElementById('inf-tr').textContent=T.length;
+}
+
+// ============================================================
+// NAV
 // ============================================================
 var tabs=['db','ks','pr','st','po','sp','pl','lp','pg'];
 function go(id){
-  tabs.forEach(function(t){
-    document.getElementById('t-'+t).classList.remove('on');
-    document.getElementById('n-'+t).classList.remove('on');
-  });
+  tabs.forEach(function(t){document.getElementById('t-'+t).classList.remove('on');document.getElementById('n-'+t).classList.remove('on');});
   document.getElementById('t-'+id).classList.add('on');
   document.getElementById('n-'+id).classList.add('on');
   if(id==='db')rdDb();
@@ -515,17 +513,14 @@ function go(id){
   if(id==='lp')rdLap();
   if(id==='sp')rdSp();
   if(id==='pl')rdPl();
-  if(id==='pg'){document.getElementById('inf-pr').textContent=P.length;document.getElementById('inf-tr').textContent=T.length;}
+  if(id==='pg'){document.getElementById('inf-pr').textContent=P.length;document.getElementById('inf-tr').textContent=T.length;rdAdmList();}
 }
-
-function render(){rdDb();rdGrid();rdTbl();rdStk();rdLap();rdSp();rdPl();}
 
 // ============================================================
 // DASHBOARD
 // ============================================================
 function rdDb(){
-  var now=new Date();
-  var ds=now.toDateString();
+  var now=new Date(),ds=now.toDateString();
   document.getElementById('tgl').textContent=now.toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   var td=T.filter(function(x){return new Date(x.tgl).toDateString()===ds;});
   var om=td.reduce(function(s,x){return s+(x.tot||0);},0);
@@ -538,12 +533,9 @@ function rdDb(){
   document.getElementById('d3').textContent=kr.length;
   document.getElementById('d4').textContent=rp(lb);
   document.getElementById('kb').textContent=kr.length;
-  // Stok kritis
-  document.getElementById('dk').innerHTML=kr.length?kr.slice(0,5).map(function(p){return '<div class="lr"><span>'+p.em+' '+p.nm+'</span><span class="pill pd">'+p.stk+' '+p.sat+'</span></div>';}).join(''):'<div style="font-size:12px;color:var(--muted);padding:8px">✅ Semua aman</div>';
-  // Transaksi terakhir
-  var lt=[...T].reverse().slice(0,3);
+  document.getElementById('dk').innerHTML=kr.length?kr.slice(0,5).map(function(p){return '<div class="lr"><span>'+(p.em||'📦')+' '+p.nm+'</span><span class="pill pd">'+p.stk+' '+p.sat+'</span></div>';}).join(''):'<div style="font-size:12px;color:var(--muted);padding:8px">✅ Semua stok aman</div>';
+  var lt=T.slice(0,3);
   document.getElementById('dt').innerHTML=lt.length?lt.map(function(x){return '<div class="lr"><span>🧾 #'+String(x.id).slice(-5)+'</span><span class="pill pb">'+rp(x.tot)+'</span></div>';}).join(''):'<div style="font-size:12px;color:var(--muted);padding:8px">Belum ada transaksi</div>';
-  // Terlaris
   var sm={};T.forEach(function(x){(x.items||[]).forEach(function(i){sm[i.nm]=(sm[i.nm]||0)+i.q;});});
   var tl=Object.entries(sm).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
   document.getElementById('dtl').innerHTML=tl.length?tl.map(function(e){return '<div class="lr"><span>'+e[0]+'</span><span class="pill po">'+e[1]+' terjual</span></div>';}).join(''):'<div style="font-size:12px;color:var(--muted);padding:8px">Belum ada data</div>';
@@ -552,25 +544,24 @@ function rdDb(){
 // ============================================================
 // KASIR
 // ============================================================
-var cart=[], aktKat='';
+var cart=[],aktKat='';
 function rdGrid(){
   var kats=[...new Set(P.map(function(p){return p.kat;}))];
   document.getElementById('catbar').innerHTML='<button class="catbtn '+(aktKat===''?'on':'')+'" onclick="fltC(\'\')">Semua</button>'+kats.map(function(k){return '<button class="catbtn '+(aktKat===k?'on':'')+'" onclick="fltC(\''+k+'\')">'+k+'</button>';}).join('');
   var d=aktKat?P.filter(function(p){return p.kat===aktKat;}):P;
-  document.getElementById('pgrid').innerHTML=d.map(function(p){return '<div class="pcard '+(p.stk<=0?'ox':'')+'" onclick="addC('+p.id+')" title="'+p.nm+'"><div style="font-size:18px;margin-bottom:4px">'+p.em+'</div><div class="pnm">'+p.nm+'</div><div class="ppr">'+rp(p.hj)+'</div><div class="pst">Stok: '+p.stk+' '+p.sat+'</div></div>';}).join('');
+  document.getElementById('pgrid').innerHTML=d.map(function(p){return '<div class="pcard '+(p.stk<=0?'ox':'')+'" onclick="addC('+p.id+')"><div style="font-size:18px;margin-bottom:4px">'+(p.em||'📦')+'</div><div class="pnm">'+p.nm+'</div><div class="ppr">'+rp(p.hj)+'</div><div class="pst">Stok: '+p.stk+' '+p.sat+'</div></div>';}).join('');
 }
 function fltC(k){aktKat=k;rdGrid();}
 function addC(id){
-  var p=P.find(function(x){return x.id===id;});
+  var p=P.find(function(x){return x.id==id;});
   if(!p||p.stk<=0)return;
-  var ex=cart.find(function(c){return c.id===id;});
+  var ex=cart.find(function(c){return c.id==id;});
   if(ex){if(ex.q<p.stk)ex.q++;}
   else cart.push({id:p.id,bc:p.bc,nm:p.nm,hb:p.hb,hj:p.hj,q:1,sat:p.sat});
   rdCart();
 }
 function scan(){
-  var bc=document.getElementById('bci').value.trim();
-  if(!bc)return;
+  var bc=document.getElementById('bci').value.trim();if(!bc)return;
   var p=P.find(function(x){return x.bc===bc;});
   var st=document.getElementById('sst');
   if(p){addC(p.id);st.textContent='✅ '+p.nm;st.style.color='var(--green)';document.getElementById('bci').value='';}
@@ -596,34 +587,40 @@ function calcChg(){
   var met=document.getElementById('pmet').value;
   var el=document.getElementById('kem');
   if(met!=='tunai'){el.style.display='none';return;}
-  if(byr>0){
-    el.style.display='block';
-    if(byr>=tot){el.className='kem ok';el.textContent='Kembalian: '+rp(byr-tot);}
-    else{el.className='kem er';el.textContent='Kurang: '+rp(tot-byr);}
-  }else el.style.display='none';
+  if(byr>0){el.style.display='block';if(byr>=tot){el.className='kem ok';el.textContent='Kembalian: '+rp(byr-tot);}else{el.className='kem er';el.textContent='Kurang: '+rp(tot-byr);}}
+  else el.style.display='none';
 }
-function checkout(){
+async function checkout(){
   if(!cart.length){toast('Keranjang kosong!','ter');return;}
   var tot=cart.reduce(function(s,c){return s+c.hj*c.q;},0);
   var lb=cart.reduce(function(s,c){return s+(c.hj-c.hb)*c.q;},0);
   var met=document.getElementById('pmet').value;
   var byr=parseFloat(document.getElementById('payin').value)||tot;
   if(met==='tunai'&&byr<tot){toast('Pembayaran kurang!','ter');return;}
-  var trx={id:Date.now(),tgl:new Date().toISOString(),items:JSON.parse(JSON.stringify(cart)),tot:tot,byr:byr,km:byr-tot,met:met,lb:lb};
-  T.push(trx);
-  cart.forEach(function(c){
-    var p=P.find(function(x){return x.id===c.id;});
-    if(p)p.stk-=c.q;
-    H.unshift({tgl:new Date().toISOString(),nm:c.nm,tp:'keluar',q:c.q,ket:'Penjualan #'+String(trx.id).slice(-5)});
-  });
-  save();
-  showStruk(trx);
+  var trxObj={tgl:new Date().toISOString(),items:JSON.parse(JSON.stringify(cart)),tot:tot,byr:byr,km:byr-tot,met:met,lb:lb,kasir:CU?CU.nm||CU.u:'Kasir'};
+  // Simpan ke Supabase
+  var {data:saved,error}=await sb.from('transaksi').insert(trxObj).select().single();
+  if(error){toast('Gagal simpan transaksi!','ter');console.error(error);return;}
+  T.unshift(saved);
+  // Update stok
+  for(var i=0;i<cart.length;i++){
+    var c=cart[i];
+    var p=P.find(function(x){return x.id==c.id;});
+    if(p){
+      p.stk-=c.q;
+      await sb.from('produk').update({stk:p.stk}).eq('id',p.id);
+      await sb.from('stok_hist').insert({tgl:new Date().toISOString(),nm:c.nm,tp:'keluar',q:c.q,ket:'Penjualan #'+String(saved.id).slice(-5)});
+    }
+  }
+  await loadHist();
+  showStruk(saved);
   rdDb();rdGrid();
 }
+async function loadHist(){var {data}=await sb.from('stok_hist').select('*').order('tgl',{ascending:false}).limit(100);if(data)H=data;}
 function showStruk(trx){
   var nm=document.getElementById('snm').value,al=document.getElementById('sal').value,tp=document.getElementById('stp').value;
   var dt=new Date(trx.tgl);
-  document.getElementById('skout').innerHTML='<div class="struk"><div class="stit"><span style="color:var(--red)">JKT</span> <span style="color:var(--blue)">MART</span></div><div class="ssub">'+al+'<br>'+tp+'<br>'+dt.toLocaleString('id-ID')+'</div><hr class="shr">'+trx.items.map(function(i){return '<div class="srow"><span>'+i.nm+'<br>'+i.q+' × '+rp(i.hj)+'</span><span>'+rp(i.q*i.hj)+'</span></div>';}).join('')+'<hr class="shr"><div class="srow sbold"><span>TOTAL</span><span>'+rp(trx.tot)+'</span></div><div class="srow"><span>'+trx.met.toUpperCase()+'</span><span>'+rp(trx.byr)+'</span></div>'+(trx.met==='tunai'?'<div class="srow"><span>KEMBALIAN</span><span>'+rp(trx.km)+'</span></div>':'')+'<hr class="shr"><div class="sfoot">No: #'+String(trx.id).slice(-5)+'<br>Terima kasih sudah berbelanja!<br>JKT MART - Toko Sembako Terpercaya</div></div>';
+  document.getElementById('skout').innerHTML='<div class="struk"><div class="stit"><span style="color:var(--red)">JKT</span> <span style="color:var(--blue)">MART</span></div><div class="ssub">'+al+'<br>'+tp+'<br>'+dt.toLocaleString('id-ID')+'<br>Kasir: '+(trx.kasir||'-')+'</div><hr class="shr">'+trx.items.map(function(i){return '<div class="srow"><span>'+i.nm+'<br>'+i.q+' × '+rp(i.hj)+'</span><span>'+rp(i.q*i.hj)+'</span></div>';}).join('')+'<hr class="shr"><div class="srow sbold"><span>TOTAL</span><span>'+rp(trx.tot)+'</span></div><div class="srow"><span>'+trx.met.toUpperCase()+'</span><span>'+rp(trx.byr)+'</span></div>'+(trx.met==='tunai'?'<div class="srow"><span>KEMBALIAN</span><span>'+rp(trx.km)+'</span></div>':'')+'<hr class="shr"><div class="sfoot2">No: #'+String(trx.id).slice(-5)+'<br>Terima kasih sudah berbelanja!<br>JKT MART — Sembako Terpercaya</div></div>';
   document.getElementById('msk').style.display='flex';
 }
 function prtStruk(){var w=window.open('');w.document.write('<html><body>'+document.getElementById('skout').innerHTML+'</body></html>');w.document.close();w.print();}
@@ -632,22 +629,21 @@ function rstKs(){cart=[];rdCart();document.getElementById('payin').value='';}
 // ============================================================
 // PRODUK
 // ============================================================
-var fNm='',fKt='';
+var fNm='',fKt='',eid=null;
 function rdTbl(){
   var kats=[...new Set(P.map(function(p){return p.kat;}))];
-  var kf=document.getElementById('kflt');var cv=kf.value;
+  var kf=document.getElementById('kflt'),cv=kf.value;
   kf.innerHTML='<option value="">Semua Kategori</option>'+kats.map(function(k){return '<option value="'+k+'" '+(k===cv?'selected':'')+'>'+k+'</option>';}).join('');
   var d=P;
   if(fNm)d=d.filter(function(p){return p.nm.toLowerCase().includes(fNm.toLowerCase())||p.bc.includes(fNm);});
   if(fKt)d=d.filter(function(p){return p.kat===fKt;});
-  document.getElementById('ptb').innerHTML=d.map(function(p){return '<tr><td style="font-family:monospace;font-size:10px">'+p.bc+'</td><td>'+p.em+' '+p.nm+'</td><td>'+p.kat+'</td><td>'+rp(p.hb)+'</td><td>'+rp(p.hj)+'</td><td><span class="pill '+(p.stk<=p.min?'pd':p.stk<=p.min*2?'pw':'po')+'">'+p.stk+'</span></td><td>'+p.min+'</td><td>'+(p.stk<=0?'<span class="pill pd">Habis</span>':p.stk<=p.min?'<span class="pill pw">Kritis</span>':'<span class="pill po">Aman</span>')+'</td><td><button class="btn bsm" onclick="editP('+p.id+')">✏️</button> <button class="btn bsm" style="color:var(--red)" onclick="hapP('+p.id+')">🗑️</button></td></tr>';}).join('');
+  document.getElementById('ptb').innerHTML=d.map(function(p){return '<tr><td style="font-family:monospace;font-size:10px">'+p.bc+'</td><td>'+(p.em||'📦')+' '+p.nm+'</td><td>'+p.kat+'</td><td>'+rp(p.hb)+'</td><td>'+rp(p.hj)+'</td><td><span class="pill '+(p.stk<=p.min?'pd':p.stk<=p.min*2?'pw':'po')+'">'+p.stk+'</span></td><td>'+p.min+'</td><td>'+(p.stk<=0?'<span class="pill pd">Habis</span>':p.stk<=p.min?'<span class="pill pw">Kritis</span>':'<span class="pill po">Aman</span>')+'</td><td><button class="btn bsm" onclick="editP('+p.id+')">✏️</button> <button class="btn bsm" style="color:var(--red)" onclick="hapP('+p.id+')">🗑️</button></td></tr>';}).join('');
 }
 function fltP(v){fNm=v;rdTbl();}
 function fltK(v){fKt=v;rdTbl();}
-var eid=null;
 function openAddP(){eid=null;document.getElementById('mpt').textContent='Tambah Produk';['pb','pn','phb','phj','ps'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('pm').value='5';document.getElementById('mp').style.display='flex';}
 function editP(id){
-  var p=P.find(function(x){return x.id===id;});if(!p)return;
+  var p=P.find(function(x){return x.id==id;});if(!p)return;
   eid=id;document.getElementById('mpt').textContent='Edit Produk';
   document.getElementById('pb').value=p.bc;document.getElementById('pn').value=p.nm;
   document.getElementById('pk').value=p.kat;document.getElementById('phb').value=p.hb;
@@ -656,43 +652,57 @@ function editP(id){
   document.getElementById('mp').style.display='flex';
 }
 function autoBC(){document.getElementById('pb').value='8'+Math.random().toString().slice(2,14).padEnd(12,'0');}
-function saveProd(){
-  var nm=document.getElementById('pn').value.trim();
-  if(!nm){toast('Nama produk wajib diisi!','ter');return;}
-  var obj={bc:document.getElementById('pb').value.trim()||autoGenBC(),nm:nm,kat:document.getElementById('pk').value,hb:parseInt(document.getElementById('phb').value)||0,hj:parseInt(document.getElementById('phj').value)||0,stk:parseInt(document.getElementById('ps').value)||0,min:parseInt(document.getElementById('pm').value)||5,sat:document.getElementById('psat').value,em:'📦'};
-  if(eid){var i=P.findIndex(function(x){return x.id===eid;});if(i>=0){obj.id=eid;P[i]=obj;}}
-  else{obj.id=Date.now();P.push(obj);}
-  save();closeM('mp');rdTbl();rdGrid();rdDb();
-  toast(eid?'Produk diperbarui!':'Produk ditambahkan!','tok');
-}
 function autoGenBC(){return '8'+Math.random().toString().slice(2,14).padEnd(12,'0');}
-function hapP(id){if(!confirm('Hapus produk ini?'))return;P=P.filter(function(p){return p.id!==id;});save();rdTbl();rdGrid();toast('Produk dihapus','tinf');}
+async function saveProd(){
+  var nm=document.getElementById('pn').value.trim();if(!nm){toast('Nama produk wajib!','ter');return;}
+  var btn=document.getElementById('savepbtn');btn.disabled=true;btn.textContent='⏳ Menyimpan...';
+  var obj={bc:document.getElementById('pb').value.trim()||autoGenBC(),nm:nm,kat:document.getElementById('pk').value,hb:parseInt(document.getElementById('phb').value)||0,hj:parseInt(document.getElementById('phj').value)||0,stk:parseInt(document.getElementById('ps').value)||0,min:parseInt(document.getElementById('pm').value)||5,sat:document.getElementById('psat').value,em:'📦'};
+  if(eid){
+    await sb.from('produk').update(obj).eq('id',eid);
+    var i=P.findIndex(function(x){return x.id==eid;});if(i>=0){obj.id=eid;P[i]=obj;}
+    toast('Produk diperbarui!','tok');
+  } else {
+    var {data}=await sb.from('produk').insert(obj).select().single();
+    if(data)P.push(data);
+    toast('Produk ditambahkan!','tok');
+  }
+  btn.disabled=false;btn.textContent='💾 Simpan';
+  closeM('mp');rdTbl();rdGrid();rdDb();
+}
+async function hapP(id){
+  if(!confirm('Hapus produk ini?'))return;
+  await sb.from('produk').delete().eq('id',id);
+  P=P.filter(function(p){return p.id!=id;});
+  rdTbl();rdGrid();toast('Produk dihapus','tinf');
+}
 
 // ============================================================
 // STOK
 // ============================================================
 function rdStk(){
   var tot=P.reduce(function(s,p){return s+p.stk;},0);
-  var nbeli=P.reduce(function(s,p){return s+p.stk*p.hb;},0);
-  var njual=P.reduce(function(s,p){return s+p.stk*p.hj;},0);
+  var nb=P.reduce(function(s,p){return s+p.stk*p.hb;},0);
+  var nj=P.reduce(function(s,p){return s+p.stk*p.hj;},0);
   var kr=P.filter(function(p){return p.stk<=p.min;}).length;
   document.getElementById('sring').innerHTML='<div class="lr"><span>Total Produk</span><span>'+P.length+'</span></div><div class="lr"><span>Total Stok</span><span>'+tot+' item</span></div><div class="lr"><span>Stok Kritis</span><span class="pill pd">'+kr+'</span></div>';
-  document.getElementById('sval').innerHTML='<div class="lr"><span>Nilai Beli</span><span>'+rp(nbeli)+'</span></div><div class="lr"><span>Nilai Jual</span><span>'+rp(njual)+'</span></div>';
+  document.getElementById('sval').innerHTML='<div class="lr"><span>Nilai Beli</span><span>'+rp(nb)+'</span></div><div class="lr"><span>Nilai Jual</span><span>'+rp(nj)+'</span></div>';
   var el=document.getElementById('shist');
   if(!H.length){el.innerHTML='<div style="text-align:center;color:var(--muted);font-size:12px;padding:20px">Belum ada riwayat</div>';return;}
   el.innerHTML=H.slice(0,20).map(function(h){return '<div class="hitem"><div class="hico" style="background:'+(h.tp==='masuk'?'#e8f5e9':'#ffebee')+'">'+(h.tp==='masuk'?'📥':'📤')+'</div><div style="flex:1"><div style="font-size:12px;font-weight:600">'+h.nm+'</div><div style="font-size:11px;color:var(--muted)">'+h.ket+' — '+new Date(h.tgl).toLocaleString('id-ID')+'</div></div><span class="pill '+(h.tp==='masuk'?'po':'pd')+'">'+(h.tp==='masuk'?'+':'-')+h.q+'</span></div>';}).join('');
 }
 function openSI(){['sib','sin','siq','sih','sis'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('msi').style.display='flex';}
 function lkpS(){var bc=document.getElementById('sib').value.trim();var p=P.find(function(x){return x.bc===bc;});document.getElementById('sin').value=p?p.nm:'';if(p)document.getElementById('sih').value=p.hb;}
-function saveSI(){
+async function saveSI(){
   var bc=document.getElementById('sib').value.trim();var q=parseInt(document.getElementById('siq').value)||0;
   if(!bc||!q){toast('Barcode & jumlah wajib!','ter');return;}
   var p=P.find(function(x){return x.bc===bc;});
   if(!p){toast('Produk tidak ditemukan!','ter');return;}
   var hb=parseInt(document.getElementById('sih').value)||0;var sup=document.getElementById('sis').value.trim();
   p.stk+=q;if(hb>0)p.hb=hb;
-  H.unshift({tgl:new Date().toISOString(),nm:p.nm,tp:'masuk',q:q,ket:'Stok Masuk dari '+(sup||'Supplier')});
-  save();closeM('msi');rdStk();rdTbl();rdDb();
+  await sb.from('produk').update({stk:p.stk,hb:p.hb}).eq('id',p.id);
+  await sb.from('stok_hist').insert({tgl:new Date().toISOString(),nm:p.nm,tp:'masuk',q:q,ket:'Stok Masuk dari '+(sup||'Supplier')});
+  await loadHist();
+  closeM('msi');rdStk();rdTbl();rdDb();
   toast('Stok masuk +'+q+' berhasil','tok');
 }
 
@@ -708,39 +718,34 @@ function rdLap(){
   document.getElementById('rt').textContent=bln.length;
   document.getElementById('rl').textContent=rp(lb);
   document.getElementById('ra').textContent=rp(bln.length?om/bln.length:0);
-  // Chart 7 hari
   var days=[];for(var i=6;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);var ds=d.toDateString();var dv=T.filter(function(x){return new Date(x.tgl).toDateString()===ds;}).reduce(function(s,x){return s+(x.tot||0);},0);days.push({lb:d.toLocaleDateString('id-ID',{weekday:'short'}),vl:dv});}
   var mx=Math.max.apply(null,days.map(function(d){return d.vl;}),1)||1;
   document.getElementById('chart').innerHTML=days.map(function(d){return '<div class="bar" style="background:var(--blue);height:'+(d.vl?Math.round(d.vl/mx*100):5)+'%;opacity:'+(d.vl?1:0.15)+'"><span class="bvl">'+(d.vl?rpS(d.vl):'')+'</span><span class="blb">'+d.lb+'</span></div>';}).join('');
-  // Per kategori
-  var km={};T.forEach(function(x){(x.items||[]).forEach(function(i){var p=P.find(function(y){return y.id===i.id||y.nm===i.nm;});var k=p?p.kat:'Lainnya';km[k]=(km[k]||0)+i.q*i.hj;});});
+  var km={};T.forEach(function(x){(x.items||[]).forEach(function(i){var p=P.find(function(y){return y.id==i.id||y.nm===i.nm;});var k=p?p.kat:'Lainnya';km[k]=(km[k]||0)+i.q*i.hj;});});
   var ks=Object.entries(km).sort(function(a,b){return b[1]-a[1];});
   document.getElementById('rkat').innerHTML=ks.length?ks.map(function(e){return '<div class="lr"><span>'+e[0]+'</span><span>'+rp(e[1])+'</span></div>';}).join(''):'<div style="font-size:12px;color:var(--muted);padding:8px">Belum ada data</div>';
-  // Riwayat
-  var sl=[...T].reverse().slice(0,30);
-  document.getElementById('rtrx').innerHTML=sl.length?'<table><thead><tr><th>No</th><th>Waktu</th><th>Total</th><th>Metode</th></tr></thead><tbody>'+sl.map(function(x){return '<tr><td>#'+String(x.id).slice(-5)+'</td><td>'+new Date(x.tgl).toLocaleString('id-ID')+'</td><td>'+rp(x.tot)+'</td><td>'+x.met+'</td></tr>';}).join('')+'</tbody></table>':'<div style="font-size:12px;color:var(--muted);padding:12px">Belum ada transaksi</div>';
+  document.getElementById('rtrx').innerHTML=T.length?'<table><thead><tr><th>No</th><th>Waktu</th><th>Total</th><th>Metode</th><th>Kasir</th></tr></thead><tbody>'+T.slice(0,50).map(function(x){return '<tr><td>#'+String(x.id).slice(-5)+'</td><td>'+new Date(x.tgl).toLocaleString('id-ID')+'</td><td>'+rp(x.tot)+'</td><td>'+x.met+'</td><td>'+(x.kasir||'-')+'</td></tr>';}).join('')+'</tbody></table>':'<div style="font-size:12px;color:var(--muted);padding:12px">Belum ada transaksi</div>';
 }
 
 function expPDF(){
-  if(typeof window.jspdf==='undefined'&&typeof jsPDF==='undefined'){toast('Memuat library PDF...','tinf');setTimeout(expPDF,2000);return;}
-  var {jsPDF}=window.jspdf||window;
-  var doc=new jsPDF();
+  if(typeof window.jspdf==='undefined'){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';s.onload=expPDF;document.head.appendChild(s);toast('Memuat PDF...','tinf');return;}
+  var {jsPDF}=window.jspdf;var doc=new jsPDF();
   doc.setFontSize(18);doc.setTextColor(26,35,126);doc.text('JKT MART',105,20,{align:'center'});
   doc.setFontSize(10);doc.setTextColor(100);doc.text('Laporan — '+new Date().toLocaleDateString('id-ID'),105,28,{align:'center'});
-  var y=40;doc.setFontSize(12);doc.setTextColor(0);doc.text('Riwayat Transaksi',14,y);y+=8;
-  doc.setFontSize(9);doc.setTextColor(80);doc.text('No',14,y);doc.text('Waktu',30,y);doc.text('Total',110,y);doc.text('Metode',150,y);
+  var y=40;doc.setFontSize(11);doc.setTextColor(0);doc.text('Riwayat Transaksi',14,y);y+=8;
+  doc.setFontSize(9);doc.setTextColor(80);
+  doc.text('No',14,y);doc.text('Waktu',30,y);doc.text('Total',110,y);doc.text('Metode',148,y);doc.text('Kasir',170,y);
   y+=2;doc.line(14,y,196,y);y+=5;doc.setTextColor(0);
-  [...T].reverse().slice(0,30).forEach(function(x){if(y>270){doc.addPage();y=20;}doc.text('#'+String(x.id).slice(-5),14,y);doc.text(new Date(x.tgl).toLocaleString('id-ID').slice(0,16),30,y);doc.text(rp(x.tot),110,y);doc.text(x.met,150,y);y+=7;});
+  T.slice(0,40).forEach(function(x){if(y>270){doc.addPage();y=20;}doc.text('#'+String(x.id).slice(-5),14,y);doc.text(new Date(x.tgl).toLocaleString('id-ID').slice(0,16),30,y);doc.text(rp(x.tot),110,y);doc.text(x.met||'-',148,y);doc.text(x.kasir||'-',170,y);y+=7;});
   doc.save('JKT-MART-'+new Date().toISOString().slice(0,10)+'.pdf');
   toast('PDF berhasil diexport!','tok');
 }
-
 function expXLS(){
-  if(typeof XLSX==='undefined'){toast('Memuat library Excel...','tinf');return;}
+  if(typeof XLSX==='undefined'){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=expXLS;document.head.appendChild(s);toast('Memuat Excel...','tinf');return;}
   var wb=XLSX.utils.book_new();
-  var td=[['No','Waktu','Total','Laba','Metode']];
-  T.forEach(function(x){td.push(['#'+String(x.id).slice(-5),new Date(x.tgl).toLocaleString('id-ID'),x.tot,x.lb,x.met]);});
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(td),'Transaksi');
+  var td2=[['No','Waktu','Total','Laba','Metode','Kasir']];
+  T.forEach(function(x){td2.push(['#'+String(x.id).slice(-5),new Date(x.tgl).toLocaleString('id-ID'),x.tot,x.lb,x.met,x.kasir||'-']);});
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(td2),'Transaksi');
   var pd2=[['Barcode','Nama','Kategori','H.Beli','H.Jual','Stok','Min','Satuan']];
   P.forEach(function(p){pd2.push([p.bc,p.nm,p.kat,p.hb,p.hj,p.stk,p.min,p.sat]);});
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(pd2),'Produk');
@@ -749,38 +754,47 @@ function expXLS(){
 }
 
 // ============================================================
+// ADMIN MANAGEMENT
+// ============================================================
+async function addAdm(){
+  var u=document.getElementById('au').value.trim();
+  var p=document.getElementById('ap').value;
+  var nm=document.getElementById('anm').value.trim()||u;
+  var rl=document.getElementById('arl').value;
+  if(!u||!p){toast('Isi username & password!','ter');return;}
+  var {error}=await sb.from('admin').insert({u:u,p:p,nm:nm,role:rl});
+  if(error){toast('Gagal: username mungkin sudah ada!','ter');return;}
+  document.getElementById('au').value='';document.getElementById('ap').value='';document.getElementById('anm').value='';
+  toast('User '+u+' berhasil ditambahkan!','tok');
+  rdAdmList();
+}
+async function rdAdmList(){
+  var {data}=await sb.from('admin').select('*');
+  if(!data)return;
+  document.getElementById('admlist').innerHTML='<div class="ct" style="margin-bottom:6px">Daftar User:</div>'+data.map(function(a){return '<div class="lr"><span>👤 '+a.nm+' ('+a.u+')</span><span class="pill '+(a.role==="owner"?'pb':'po')+'">'+a.role+'</span></div>';}).join('');
+}
+
+// ============================================================
 // SUPPLIER & PELANGGAN
 // ============================================================
 function rdSp(){var el=document.getElementById('spwrap');if(!SP.length){el.innerHTML='<div style="text-align:center;color:var(--muted);font-size:12px;padding:20px">Belum ada supplier.</div>';return;}el.innerHTML=SP.map(function(s,i){return '<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:600">🏭 '+s.nm+'</div><div style="font-size:11px;color:var(--muted)">📞 '+s.tp+' | '+s.pr+'</div></div><button class="btn bsm" style="color:var(--red)" onclick="dlSp('+i+')">🗑️</button></div>';}).join('');}
-function addSup(){var n=prompt('Nama Supplier:');if(!n)return;var t=prompt('Telepon:')||'-';var p=prompt('Produk utama:')||'Berbagai';SP.push({nm:n,tp:t,pr:p});save();rdSp();toast('Supplier ditambahkan','tok');}
-function dlSp(i){SP.splice(i,1);save();rdSp();}
+function addSup(){var n=prompt('Nama Supplier:');if(!n)return;var t=prompt('Telepon:')||'-';var p=prompt('Produk utama:')||'Berbagai';SP.push({nm:n,tp:t,pr:p});localStorage.setItem('jm_sp',JSON.stringify(SP));rdSp();toast('Supplier ditambahkan','tok');}
+function dlSp(i){SP.splice(i,1);localStorage.setItem('jm_sp',JSON.stringify(SP));rdSp();}
 function rdPl(){var el=document.getElementById('plwrap');if(!PL.length){el.innerHTML='<div style="text-align:center;color:var(--muted);font-size:12px;padding:20px">Belum ada pelanggan.</div>';return;}el.innerHTML=PL.map(function(p,i){return '<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:600">👤 '+p.nm+'</div><div style="font-size:11px;color:var(--muted)">📞 '+p.tp+'</div></div><button class="btn bsm" style="color:var(--red)" onclick="dlPl('+i+')">🗑️</button></div>';}).join('');}
-function addPel(){var n=prompt('Nama Pelanggan:');if(!n)return;var t=prompt('Telepon:')||'-';PL.push({nm:n,tp:t});save();rdPl();toast('Pelanggan ditambahkan','tok');}
-function dlPl(i){PL.splice(i,1);save();rdPl();}
+function addPel(){var n=prompt('Nama Pelanggan:');if(!n)return;var t=prompt('Telepon:')||'-';PL.push({nm:n,tp:t});localStorage.setItem('jm_pl',JSON.stringify(PL));rdPl();toast('Pelanggan ditambahkan','tok');}
+function dlPl(i){PL.splice(i,1);localStorage.setItem('jm_pl',JSON.stringify(PL));rdPl();}
+function buatPO(){var sp=prompt('Supplier:');if(!sp)return;var pr=prompt('Produk:');if(!pr)return;var q=prompt('Jumlah:')||'0';var el=document.getElementById('powrap');if(el.querySelector('p'))el.innerHTML='';el.innerHTML='<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:600">🚚 PO — '+new Date().toLocaleDateString('id-ID')+'</div><div style="font-size:11px;color:var(--muted)">'+sp+' | '+pr+' × '+q+'</div></div><span class="pill pw">Pending</span></div>'+el.innerHTML;toast('PO dibuat','tok');}
 
-// PO
-function buatPO(){var sp=prompt('Nama Supplier:');if(!sp)return;var pr=prompt('Produk:');if(!pr)return;var q=prompt('Jumlah:')||'0';var el=document.getElementById('powrap');if(el.querySelector('p'))el.innerHTML='';el.innerHTML='<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:600">🚚 PO — '+new Date().toLocaleDateString('id-ID')+'</div><div style="font-size:11px;color:var(--muted)">'+sp+' | '+pr+' × '+q+'</div></div><span class="pill pw">Pending</span></div>'+el.innerHTML;toast('Purchase Order dibuat','tok');}
-
-// ============================================================
-// PENGATURAN
-// ============================================================
 function saveSett(){toast('Pengaturan disimpan','tok');}
-function addAdm(){var u=document.getElementById('au').value.trim();var p=document.getElementById('ap').value;if(!u||!p){toast('Isi username & password!','ter');return;}A.push({u:u,p:p,nm:u});save();document.getElementById('au').value='';document.getElementById('ap').value='';toast('Admin '+u+' ditambahkan','tok');}
 
 // ============================================================
 // UTILS
 // ============================================================
 function rp(n){return 'Rp '+(n||0).toLocaleString('id-ID');}
-function rpS(n){if(n>=1000000)return (n/1000000).toFixed(1)+'jt';if(n>=1000)return Math.round(n/1000)+'rb';return n;}
+function rpS(n){if(n>=1000000)return(n/1000000).toFixed(1)+'jt';if(n>=1000)return Math.round(n/1000)+'rb';return n;}
 function closeM(id){document.getElementById(id).style.display='none';}
-function toast(msg,cls){var t=document.getElementById('toast');t.textContent=msg;t.className='toast '+cls;t.style.display='block';setTimeout(function(){t.style.display='none';},2800);}
-
-// JAM
+function toast(msg,cls){var t=document.getElementById('toast');t.textContent=msg;t.className='toast '+cls;t.style.display='block';setTimeout(function(){t.style.display='none';},3000);}
 setInterval(function(){var el=document.getElementById('jam');if(el)el.textContent=new Date().toLocaleTimeString('id-ID');},1000);
-
-// Load PDF & Excel library
-var s1=document.createElement('script');s1.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';document.head.appendChild(s1);
-var s2=document.createElement('script');s2.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';document.head.appendChild(s2);
 </script>
 </body>
 </html>
