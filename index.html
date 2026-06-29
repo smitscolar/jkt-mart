@@ -802,21 +802,30 @@ async function loadAll(){
     if(td) T=td;
     var {data:hd}=await sb.from('stok_hist').select('*').order('tgl',{ascending:false}).limit(100);
     if(hd) H=hd;
-    document.getElementById('dbbadge').textContent='☁️ Live';
-    document.getElementById('dbbadge').className='dbbadge';
+    var dbEl=document.getElementById('dbbadge');
+    if(dbEl){dbEl.textContent='☁️ Live';dbEl.className='dbbadge';}
   } catch(e){
-    document.getElementById('dbbadge').textContent='⚡ Offline';
-    document.getElementById('dbbadge').className='dbbadge off';
-    document.getElementById('dbst').textContent='Terputus';
-    document.getElementById('dbst').className='pill pd';
+    var dbEl=document.getElementById('dbbadge');
+    if(dbEl){dbEl.textContent='⚡ Offline';dbEl.className='dbbadge off';}
+    var dbstEl=document.getElementById('dbst');
+    if(dbstEl){dbstEl.textContent='Terputus';dbstEl.className='pill pd';}
   }
-  rdDb();rdGrid();rdTbl();rdStk();rdLap();rdSp();rdPl();rdAdmList();rdPromo();
-  document.getElementById('inf-pr').textContent=P.length;
-  document.getElementById('inf-tr').textContent=T.length;
+  // Render semua menu — masing-masing dibungkus try-catch agar 1 error tidak crash semua
+  try{rdDb();}catch(e){console.warn('rdDb error',e);}
+  try{rdGrid();}catch(e){console.warn('rdGrid error',e);}
+  try{rdTbl();}catch(e){console.warn('rdTbl error',e);}
+  try{rdStk();}catch(e){console.warn('rdStk error',e);}
+  try{rdLap();}catch(e){console.warn('rdLap error',e);}
+  try{rdSp();}catch(e){console.warn('rdSp error',e);}
+  try{rdPl();}catch(e){console.warn('rdPl error',e);}
+  try{rdPromo();}catch(e){console.warn('rdPromo error',e);}
+  try{await rdAdmList();}catch(e){console.warn('rdAdmList error',e);}
+  var prEl=document.getElementById('inf-pr');if(prEl)prEl.textContent=P.length;
+  var trEl=document.getElementById('inf-tr');if(trEl)trEl.textContent=T.length;
   // AUTO PROMPT: jika produk kosong, tawari muat data contoh
   if(P.length===0){
     setTimeout(function(){
-      bukaModalSelamatDatang();
+      try{bukaModalSelamatDatang();}catch(e){}
     }, 800);
   }
 }
@@ -852,24 +861,25 @@ function go(id){
 // ============================================================
 function rdDb(){
   var now=new Date(),ds=now.toDateString();
-  document.getElementById('tgl').textContent=now.toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  var el=function(id){return document.getElementById(id);};
+  if(el('tgl'))el('tgl').textContent=now.toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   var td=T.filter(function(x){return new Date(x.tgl).toDateString()===ds;});
   var om=td.reduce(function(s,x){return s+(x.tot||0);},0);
   var it=td.reduce(function(s,x){return s+((x.items||[]).reduce(function(a,i){return a+i.q;},0));},0);
   var lb=td.reduce(function(s,x){return s+(x.lb||0);},0);
   var kr=P.filter(function(p){return p.stk<=p.min;});
-  document.getElementById('d1').textContent=rp(om);
-  document.getElementById('d1s').textContent=td.length+' transaksi';
-  document.getElementById('d2').textContent=it;
-  document.getElementById('d3').textContent=kr.length;
-  document.getElementById('d4').textContent=rp(lb);
-  document.getElementById('kb').textContent=kr.length;
-  document.getElementById('dk').innerHTML=kr.length?kr.slice(0,5).map(function(p){return '<div class="lr"><span>'+(p.em||'📦')+' '+p.nm+'</span><span class="pill pd">'+p.stk+' '+p.sat+'</span></div>';}).join(''):'<div style="font-size:12px;color:var(--muted);padding:8px">✅ Semua stok aman</div>';
+  if(el('d1'))el('d1').textContent=rp(om);
+  if(el('d1s'))el('d1s').textContent=td.length+' transaksi';
+  if(el('d2'))el('d2').textContent=it;
+  if(el('d3'))el('d3').textContent=kr.length;
+  if(el('d4'))el('d4').textContent=rp(lb);
+  if(el('kb'))el('kb').textContent=kr.length;
+  if(el('dk'))el('dk').innerHTML=kr.length?kr.slice(0,5).map(function(p){return '<div class="lr"><span>'+(p.em||'📦')+' '+p.nm+'</span><span class="pill pd">'+p.stk+' '+p.sat+'</span></div>';}).join(''):'<div style="font-size:12px;color:var(--muted);padding:8px">✅ Semua stok aman</div>';
   var lt=T.slice(0,3);
-  document.getElementById('dt').innerHTML=lt.length?lt.map(function(x){return '<div class="lr"><span>🧾 #'+String(x.id).slice(-5)+'</span><span class="pill pb">'+rp(x.tot)+'</span></div>';}).join(''):'<div style="font-size:12px;color:var(--muted);padding:8px">Belum ada transaksi</div>';
+  if(el('dt'))el('dt').innerHTML=lt.length?lt.map(function(x){return '<div class="lr"><span>🧾 #'+String(x.id).slice(-5)+'</span><span class="pill pb">'+rp(x.tot)+'</span></div>';}).join(''):'<div style="font-size:12px;color:var(--muted);padding:8px">Belum ada transaksi</div>';
   var sm={};T.forEach(function(x){(x.items||[]).forEach(function(i){sm[i.nm]=(sm[i.nm]||0)+i.q;});});
   var tl=Object.entries(sm).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
-  document.getElementById('dtl').innerHTML=tl.length?tl.map(function(e){return '<div class="lr"><span>'+e[0]+'</span><span class="pill po">'+e[1]+' terjual</span></div>';}).join(''):'<div style="font-size:12px;color:var(--muted);padding:8px">Belum ada data</div>';
+  if(el('dtl'))el('dtl').innerHTML=tl.length?tl.map(function(e){return '<div class="lr"><span>'+e[0]+'</span><span class="pill po">'+e[1]+' terjual</span></div>';}).join(''):'<div style="font-size:12px;color:var(--muted);padding:8px">Belum ada data</div>';
 }
 
 // ============================================================
@@ -1419,9 +1429,13 @@ async function addAdm(){
   rdAdmList();
 }
 async function rdAdmList(){
-  var {data}=await sb.from('admin').select('*');
-  if(!data)return;
-  document.getElementById('admlist').innerHTML='<div class="ct" style="margin-bottom:6px">Daftar User:</div>'+data.map(function(a){return '<div class="lr"><span>👤 '+a.nm+' ('+a.u+')</span><span class="pill '+(a.role==="owner"?'pb':'po')+'">'+a.role+'</span></div>';}).join('');
+  try{
+    var {data}=await sb.from('admin').select('*');
+    if(!data)return;
+    var el=document.getElementById('admlist');
+    if(!el)return;
+    el.innerHTML='<div class="ct" style="margin-bottom:6px">Daftar User:</div>'+data.map(function(a){return '<div class="lr"><span>👤 '+a.nm+' ('+a.u+')</span><span class="pill '+(a.role==="owner"?'pb':'po')+'">'+a.role+'</span></div>';}).join('');
+  }catch(e){console.warn('rdAdmList',e);}
 }
 
 // ============================================================
