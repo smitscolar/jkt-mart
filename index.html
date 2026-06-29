@@ -439,19 +439,131 @@ tr:hover td{background:#f8f9fa}
     <div class="mhead"><h3 id="mpt">Tambah Produk</h3><span class="mx" onclick="closeM('mp')">✕</span></div>
     <div class="fr"><label>Barcode</label><div style="display:flex;gap:5px"><input class="fi" id="pb" style="flex:1"/><button class="btn bb bsm" onclick="autoBC()">⚡ Auto</button></div></div>
     <div class="fr"><label>Nama Produk *</label><input class="fi" id="pn"/></div>
-    <div class="fr"><label>Kategori</label>
-      <select class="fi" id="pk"><option>Beras & Sembako</option><option>Minyak Goreng</option><option>Gula & Garam</option><option>Tepung</option><option>Minuman</option><option>Snack</option><option>Rokok</option><option>Sabun & Deterjen</option><option>Lainnya</option></select>
+    <div class="fr2">
+      <div><label>Emoji / Ikon</label>
+        <select class="fi" id="pem" onchange="rdEmojiPrev()">
+          <option value="🛒">🛒 Umum</option>
+          <option value="🌾">🌾 Beras/Tepung</option>
+          <option value="🫙">🫙 Minyak/Bumbu</option>
+          <option value="🍬">🍬 Gula</option>
+          <option value="🧂">🧂 Garam</option>
+          <option value="🍜">🍜 Mie/Pasta</option>
+          <option value="📦">📦 Karton/Dus</option>
+          <option value="🥚">🥚 Telur</option>
+          <option value="🐟">🐟 Ikan/Sarden</option>
+          <option value="🥩">🥩 Daging/Kornet</option>
+          <option value="🥛">🥛 Susu</option>
+          <option value="☕">☕ Kopi/Teh</option>
+          <option value="💧">💧 Air/Minuman</option>
+          <option value="🧼">🧼 Sabun Mandi</option>
+          <option value="🧴">🧴 Sabun Cair/Shampo</option>
+          <option value="🧻">🧻 Tisu/Kertas</option>
+          <option value="🦷">🦷 Pasta Gigi</option>
+          <option value="🚿">🚿 Deterjen</option>
+          <option value="🍫">🍫 Snack/Coklat</option>
+          <option value="🚬">🚬 Rokok</option>
+          <option value="💊">💊 Obat/Vitamin</option>
+          <option value="🩺">🩺 Kesehatan</option>
+          <option value="🍱">🍱 Makanan Siap Saji</option>
+          <option value="🫘">🫘 Kacang/Biji</option>
+          <option value="🌿">🌿 Rempah/Bumbu</option>
+        </select>
+      </div>
+      <div><label>Kategori</label>
+        <select class="fi" id="pk">
+          <optgroup label="── Bahan Pokok ──">
+            <option>Beras & Tepung</option>
+            <option>Minyak Goreng</option>
+            <option>Gula & Garam</option>
+            <option>Bumbu & Rempah</option>
+            <option>Mie & Pasta</option>
+          </optgroup>
+          <optgroup label="── Protein & Lauk ──">
+            <option>Telur & Susu</option>
+            <option>Ikan & Seafood</option>
+            <option>Daging & Unggas</option>
+            <option>Tahu & Tempe</option>
+          </optgroup>
+          <optgroup label="── Minuman ──">
+            <option>Air Mineral</option>
+            <option>Kopi & Teh</option>
+            <option>Susu & Minuman Kotak</option>
+            <option>Minuman Ringan</option>
+          </optgroup>
+          <optgroup label="── Snack & Jajanan ──">
+            <option>Snack & Keripik</option>
+            <option>Biskuit & Roti</option>
+            <option>Permen & Coklat</option>
+          </optgroup>
+          <optgroup label="── Kebersihan ──">
+            <option>Sabun & Perawatan</option>
+            <option>Deterjen & Pembersih</option>
+            <option>Tisu & Kertas</option>
+            <option>Pasta Gigi & Sikat</option>
+          </optgroup>
+          <optgroup label="── Lainnya ──">
+            <option>Rokok</option>
+            <option>Obat & Kesehatan</option>
+            <option>Alat Tulis</option>
+            <option>Lainnya</option>
+          </optgroup>
+        </select>
+      </div>
     </div>
     <div class="fr2">
-      <div><label>Harga Beli</label><input class="fi" id="phb" type="number"/></div>
-      <div><label>Harga Jual</label><input class="fi" id="phj" type="number"/></div>
+      <div><label>Harga Beli (Rp)</label><input class="fi" id="phb" type="number" placeholder="Contoh: 10000"/></div>
+      <div><label>Harga Jual (Rp)</label><input class="fi" id="phj" type="number" placeholder="Contoh: 12000"/></div>
     </div>
     <div class="fr2">
-      <div><label>Stok</label><input class="fi" id="ps" type="number"/></div>
-      <div><label>Stok Min</label><input class="fi" id="pm" type="number" value="5"/></div>
+      <div><label>Stok Awal</label><input class="fi" id="ps" type="number" placeholder="0"/></div>
+      <div><label>Stok Minimum</label><input class="fi" id="pm" type="number" value="5"/></div>
     </div>
-    <div class="fr"><label>Satuan</label>
-      <select class="fi" id="psat"><option>pcs</option><option>kg</option><option>liter</option><option>dus</option><option>bungkus</option><option>botol</option><option>kaleng</option></select>
+    <div class="fr2">
+      <div><label>Satuan</label>
+        <select class="fi" id="psat" onchange="rdSatuanCustom()">
+          <optgroup label="── Berat ──">
+            <option value="gram">gram</option>
+            <option value="ons">ons (100gr)</option>
+            <option value="kg">kg</option>
+            <option value="kwintal">kwintal</option>
+            <option value="ton">ton</option>
+          </optgroup>
+          <optgroup label="── Volume ──">
+            <option value="ml">ml</option>
+            <option value="liter">liter</option>
+          </optgroup>
+          <optgroup label="── Kemasan ──">
+            <option value="pcs">pcs / buah</option>
+            <option value="lusin">lusin (12 pcs)</option>
+            <option value="bungkus">bungkus</option>
+            <option value="sachet">sachet</option>
+            <option value="botol">botol</option>
+            <option value="kaleng">kaleng</option>
+            <option value="kotak">kotak</option>
+            <option value="pak">pak</option>
+            <option value="renceng">renceng</option>
+            <option value="papan">papan</option>
+            <option value="ikat">ikat</option>
+            <option value="gulung">gulung</option>
+          </optgroup>
+          <optgroup label="── Karton/Besar ──">
+            <option value="dus">dus</option>
+            <option value="karton">karton</option>
+            <option value="karung">karung</option>
+            <option value="bal">bal</option>
+            <option value="krat">krat</option>
+          </optgroup>
+          <optgroup label="── Lainnya ──">
+            <option value="porsi">porsi</option>
+            <option value="ekor">ekor</option>
+            <option value="lembar">lembar</option>
+            <option value="meter">meter</option>
+            <option value="lainnya">— Ketik sendiri —</option>
+          </optgroup>
+        </select>
+      </div>
+      <div id="frSatuanCustom" style="display:none"><label>Satuan Lain</label><input class="fi" id="psatCustom" placeholder="Contoh: jerigen"/></div>
+      <div><label>Margin Laba</label><div class="fi" id="pmargin" style="background:#f8f9fa;color:var(--green);font-weight:600;display:flex;align-items:center">-</div></div>
     </div>
     <div class="mfoot"><button class="btn" onclick="closeM('mp')">Batal</button><button class="btn bb" id="savepbtn" onclick="saveProd()">💾 Simpan</button></div>
   </div>
@@ -860,30 +972,96 @@ function rdTbl(){
 }
 function fltP(v){fNm=v;rdTbl();}
 function fltK(v){fKt=v;rdTbl();}
-function openAddP(){eid=null;document.getElementById('mpt').textContent='Tambah Produk';['pb','pn','phb','phj','ps'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('pm').value='5';document.getElementById('mp').style.display='flex';}
+function rdSatuanCustom(){
+  var v=document.getElementById('psat').value;
+  document.getElementById('frSatuanCustom').style.display=(v==='lainnya'?'block':'none');
+  if(v!=='lainnya')document.getElementById('psatCustom').value='';
+}
+function rdEmojiPrev(){}
+function hitungMargin(){
+  var hb=parseInt(document.getElementById('phb').value)||0;
+  var hj=parseInt(document.getElementById('phj').value)||0;
+  var el=document.getElementById('pmargin');
+  if(!el)return;
+  if(hb>0&&hj>0){
+    var margin=hj-hb;
+    var pct=Math.round(margin/hb*100);
+    el.textContent=(margin>=0?'+':'')+rp(margin)+' ('+pct+'%)';
+    el.style.color=margin>=0?'var(--green)':'var(--red)';
+  } else { el.textContent='-'; el.style.color='var(--muted)'; }
+}
+function openAddP(){
+  eid=null;
+  document.getElementById('mpt').textContent='Tambah Produk';
+  ['pb','pn','phb','phj','ps','psatCustom'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('pm').value='5';
+  document.getElementById('psat').value='pcs';
+  document.getElementById('pk').value='Beras & Tepung';
+  document.getElementById('pem').value='🛒';
+  document.getElementById('frSatuanCustom').style.display='none';
+  if(document.getElementById('pmargin'))document.getElementById('pmargin').textContent='-';
+  document.getElementById('phb').oninput=hitungMargin;
+  document.getElementById('phj').oninput=hitungMargin;
+  document.getElementById('mp').style.display='flex';
+}
 function editP(id){
   var p=P.find(function(x){return x.id==id;});if(!p)return;
   eid=id;document.getElementById('mpt').textContent='Edit Produk';
-  document.getElementById('pb').value=p.bc;document.getElementById('pn').value=p.nm;
-  document.getElementById('pk').value=p.kat;document.getElementById('phb').value=p.hb;
-  document.getElementById('phj').value=p.hj;document.getElementById('ps').value=p.stk;
-  document.getElementById('pm').value=p.min;document.getElementById('psat').value=p.sat;
+  document.getElementById('pb').value=p.bc;
+  document.getElementById('pn').value=p.nm;
+  // Set kategori
+  var pkEl=document.getElementById('pk');
+  var katOpts=Array.from(pkEl.options).map(function(o){return o.value;});
+  if(katOpts.indexOf(p.kat)>=0)pkEl.value=p.kat;else pkEl.options[0].selected=true;
+  document.getElementById('phb').value=p.hb;
+  document.getElementById('phj').value=p.hj;
+  document.getElementById('ps').value=p.stk;
+  document.getElementById('pm').value=p.min;
+  // Set satuan
+  var satEl=document.getElementById('psat');
+  var satOpts=Array.from(satEl.options).map(function(o){return o.value;});
+  if(satOpts.indexOf(p.sat)>=0){satEl.value=p.sat;document.getElementById('frSatuanCustom').style.display='none';}
+  else{satEl.value='lainnya';document.getElementById('frSatuanCustom').style.display='block';document.getElementById('psatCustom').value=p.sat;}
+  // Set emoji
+  var emEl=document.getElementById('pem');
+  var emOpts=Array.from(emEl.options).map(function(o){return o.value;});
+  if(emOpts.indexOf(p.em)>=0)emEl.value=p.em;else emEl.value='🛒';
+  hitungMargin();
+  document.getElementById('phb').oninput=hitungMargin;
+  document.getElementById('phj').oninput=hitungMargin;
   document.getElementById('mp').style.display='flex';
 }
 function autoBC(){document.getElementById('pb').value='8'+Math.random().toString().slice(2,14).padEnd(12,'0');}
 function autoGenBC(){return '8'+Math.random().toString().slice(2,14).padEnd(12,'0');}
 async function saveProd(){
   var nm=document.getElementById('pn').value.trim();if(!nm){toast('Nama produk wajib!','ter');return;}
+  var hb=parseInt(document.getElementById('phb').value)||0;
+  var hj=parseInt(document.getElementById('phj').value)||0;
+  if(hj>0&&hb>0&&hj<hb){if(!confirm('Harga jual lebih kecil dari harga beli (rugi). Lanjutkan?'))return;}
+  // Ambil satuan (custom jika pilih lainnya)
+  var satRaw=document.getElementById('psat').value;
+  var sat=satRaw==='lainnya'?(document.getElementById('psatCustom').value.trim()||'pcs'):satRaw;
+  if(!sat){toast('Isi satuan produk!','ter');return;}
+  var em=document.getElementById('pem').value||'🛒';
   var btn=document.getElementById('savepbtn');btn.disabled=true;btn.textContent='⏳ Menyimpan...';
-  var obj={bc:document.getElementById('pb').value.trim()||autoGenBC(),nm:nm,kat:document.getElementById('pk').value,hb:parseInt(document.getElementById('phb').value)||0,hj:parseInt(document.getElementById('phj').value)||0,stk:parseInt(document.getElementById('ps').value)||0,min:parseInt(document.getElementById('pm').value)||5,sat:document.getElementById('psat').value,em:'📦'};
+  var obj={
+    bc:document.getElementById('pb').value.trim()||autoGenBC(),
+    nm:nm,
+    kat:document.getElementById('pk').value,
+    hb:hb, hj:hj,
+    stk:parseInt(document.getElementById('ps').value)||0,
+    min:parseInt(document.getElementById('pm').value)||5,
+    sat:sat,
+    em:em
+  };
   if(eid){
     await sb.from('produk').update(obj).eq('id',eid);
     var i=P.findIndex(function(x){return x.id==eid;});if(i>=0){obj.id=eid;P[i]=obj;}
-    toast('Produk diperbarui!','tok');
+    toast('✅ Produk '+nm+' diperbarui!','tok');
   } else {
     var {data}=await sb.from('produk').insert(obj).select().single();
     if(data)P.push(data);
-    toast('Produk ditambahkan!','tok');
+    toast('✅ Produk '+nm+' ditambahkan!','tok');
   }
   btn.disabled=false;btn.textContent='💾 Simpan';
   closeM('mp');rdTbl();rdGrid();rdDb();
