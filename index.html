@@ -585,17 +585,10 @@ async function initSupabase() {
   document.getElementById('s-sburl').textContent = SB_URL.replace('https://','').split('.')[0]+'...';
 }
 
-// Init Supabase async, tidak block halaman
-initSupabase().catch(()=>{});
-
-// Default status setelah 3 detik jika masih connecting
-setTimeout(() => {
-  const el = document.getElementById('sbLoginStatus');
-  if (el && el.textContent.includes('Menghubungkan')) {
-    el.className = 'sb-status sb-err';
-    el.textContent = '⚡ Mode Offline — Data tersimpan di browser';
-  }
-}, 3000);
+// Supabase diinit SETELAH login berhasil
+// Status default: offline
+document.getElementById('sbLoginStatus').className = 'sb-status sb-err';
+document.getElementById('sbLoginStatus').textContent = '⚡ Siap login — klik Masuk';
 
 // ============================================================
 // DATA LOKAL (FALLBACK)
@@ -674,34 +667,46 @@ async function sbGetTransaksi() {
 // ============================================================
 let currentUser = null;
 
-async function doLogin() {
-  const u = document.getElementById('loginUser').value.trim();
-  const p = document.getElementById('loginPass').value;
+function doLogin() {
+  const u = (document.getElementById('loginUser').value || '').trim();
+  const p = document.getElementById('loginPass').value || '';
   const err = document.getElementById('loginErr');
-  const btn = document.querySelector('.login-btn');
 
-  // Reload adminDB fresh dari localStorage
-  const freshAdmin = JSON.parse(localStorage.getItem('jktmart_admin') || 'null') || [{username:'admin',password:'jktmart2025',nama:'Administrator'}];
+  // Admin default hardcoded + localStorage
+  const defaultAdmin = [{username:'admin',password:'jktmart2025',nama:'Administrator'}];
+  let admins = defaultAdmin;
+  try {
+    const stored = JSON.parse(localStorage.getItem('jktmart_admin') || 'null');
+    if (stored && stored.length) admins = stored;
+  } catch(e) {}
 
-  // Cek credentials
-  const admin = freshAdmin.find(a => a.username === u && a.password === p);
+  // Pastikan admin default selalu ada
+  if (!admins.find(a => a.username === 'admin')) {
+    admins = admins.concat(defaultAdmin);
+  }
+
+  const admin = admins.find(a => a.username === u && a.password === p);
+
   if (admin) {
-    btn.textContent = '⏳ Memuat...';
-    btn.disabled = true;
     currentUser = admin;
-    adminDB = freshAdmin;
+    adminDB = admins;
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'flex';
     document.getElementById('userLabel').textContent = admin.nama || admin.username;
-    await loadAllData();
-    btn.textContent = '🔐 Masuk';
-    btn.disabled = false;
-    showToast('Selamat datang, ' + (admin.nama || admin.username) + '!', 'ok');
+    renderDashboard();
+    renderProdukGrid();
+    renderProdukTable();
+    renderStok();
+    renderLaporan();
+    renderSup();
+    renderPel();
+    // Load Supabase di background setelah login
+    setTimeout(() => initSupabase().catch(()=>{}), 500);
     return;
   }
 
+  err.textContent = 'Password salah! Gunakan: admin / jktmart2025';
   err.style.display = 'block';
-  err.textContent = 'Username atau password salah! (Demo: admin / jktmart2025)';
   setTimeout(() => err.style.display = 'none', 4000);
 }
 
