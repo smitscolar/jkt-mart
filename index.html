@@ -408,6 +408,15 @@ tr:hover td{background:#f8f9fa}
             <div class="srow2"><span>Total Produk</span><span id="inf-pr">-</span></div>
             <div class="srow2"><span>Total Transaksi</span><span id="inf-tr">-</span></div>
           </div>
+          <div class="sc" style="border:2px dashed var(--orange);border-radius:10px">
+            <h4>🌱 Data Contoh (Demo)</h4>
+            <p style="font-size:12px;color:var(--muted);margin:0 0 10px">Masukkan 20 produk sembako + 28 transaksi 7 hari terakhir + riwayat stok sebagai data demo.</p>
+            <div id="seed-log" style="font-size:11px;color:var(--muted);margin-bottom:8px;min-height:16px"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn bb bsm" style="background:var(--orange)" onclick="jalankanSeed()">🌱 Muat Data Contoh</button>
+              <button class="btn bsm" style="color:var(--red);border:1px solid var(--red)" onclick="hapusSemua()">🗑️ Hapus Semua Data</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1145,6 +1154,128 @@ function rpS(n){if(n>=1000000)return(n/1000000).toFixed(1)+'jt';if(n>=1000)retur
 function closeM(id){document.getElementById(id).style.display='none';}
 function toast(msg,cls){var t=document.getElementById('toast');t.textContent=msg;t.className='toast '+cls;t.style.display='block';setTimeout(function(){t.style.display='none';},3000);}
 setInterval(function(){var el=document.getElementById('jam');if(el)el.textContent=new Date().toLocaleTimeString('id-ID');},1000);
+
+// ============================================================
+// SEED DATA CONTOH
+// ============================================================
+function seedLog(msg, ok) {
+  var el = document.getElementById('seed-log');
+  if (el) el.innerHTML = (ok === false ? '❌ ' : ok === true ? '✅ ' : '⏳ ') + msg;
+}
+
+async function jalankanSeed() {
+  if (!confirm('Masukkan 20 produk + 28 transaksi contoh?\n\nData yang sudah ada TIDAK akan dihapus.')) return;
+  seedLog('Menyiapkan data produk...', null);
+
+  const kasirs = ['Budi Santoso', 'Sari Dewi', 'Ahmad Fauzi'];
+  const produkData = [
+    {bc:'8991234000001',nm:'Beras Premium 5kg',kat:'Beras & Tepung',hb:62000,hj:68000,stk:50,min:10,sat:'karung',em:'🌾'},
+    {bc:'8991234000002',nm:'Beras Biasa 5kg',kat:'Beras & Tepung',hb:48000,hj:53000,stk:80,min:15,sat:'karung',em:'🌾'},
+    {bc:'8991234000003',nm:'Tepung Terigu 1kg',kat:'Beras & Tepung',hb:10000,hj:12000,stk:60,min:10,sat:'bungkus',em:'🌾'},
+    {bc:'8991234000004',nm:'Minyak Goreng 2L',kat:'Minyak & Bumbu',hb:28000,hj:32000,stk:45,min:10,sat:'botol',em:'🫙'},
+    {bc:'8991234000005',nm:'Gula Pasir 1kg',kat:'Bahan Pokok',hb:13000,hj:15000,stk:70,min:15,sat:'bungkus',em:'🍬'},
+    {bc:'8991234000006',nm:'Garam Beryodium',kat:'Minyak & Bumbu',hb:2500,hj:3500,stk:100,min:20,sat:'bungkus',em:'🧂'},
+    {bc:'8991234000007',nm:'Kecap Manis 275ml',kat:'Minyak & Bumbu',hb:8500,hj:10000,stk:40,min:8,sat:'botol',em:'🫙'},
+    {bc:'8991234000008',nm:'Mie Instan Goreng',kat:'Mie & Snack',hb:2800,hj:3500,stk:200,min:50,sat:'bungkus',em:'🍜'},
+    {bc:'8991234000009',nm:'Mie Instan Kuah',kat:'Mie & Snack',hb:2800,hj:3500,stk:180,min:50,sat:'bungkus',em:'🍜'},
+    {bc:'8991234000010',nm:'Sabun Mandi Batang',kat:'Sabun & Perawatan',hb:3500,hj:5000,stk:80,min:15,sat:'buah',em:'🧼'},
+    {bc:'8991234000011',nm:'Sabun Cuci Piring',kat:'Sabun & Perawatan',hb:7000,hj:9000,stk:50,min:10,sat:'botol',em:'🧴'},
+    {bc:'8991234000012',nm:'Shampoo Sachet',kat:'Sabun & Perawatan',hb:1500,hj:2000,stk:120,min:30,sat:'sachet',em:'🧴'},
+    {bc:'8991234000013',nm:'Telur Ayam 1 Papan',kat:'Protein & Lauk',hb:55000,hj:60000,stk:30,min:5,sat:'papan',em:'🥚'},
+    {bc:'8991234000014',nm:'Susu Kental Manis',kat:'Minuman & Susu',hb:9500,hj:11000,stk:60,min:12,sat:'kaleng',em:'🥛'},
+    {bc:'8991234000015',nm:'Kopi Sachet 1 Renceng',kat:'Minuman & Susu',hb:12000,hj:15000,stk:50,min:10,sat:'renceng',em:'☕'},
+    {bc:'8991234000016',nm:'Teh Celup 25 pcs',kat:'Minuman & Susu',hb:8000,hj:10000,stk:40,min:8,sat:'kotak',em:'🍵'},
+    {bc:'8991234000017',nm:'Air Mineral 600ml',kat:'Minuman & Susu',hb:2000,hj:3000,stk:100,min:24,sat:'botol',em:'💧'},
+    {bc:'8991234000018',nm:'Sarden Kaleng',kat:'Protein & Lauk',hb:11000,hj:13500,stk:35,min:8,sat:'kaleng',em:'🐟'},
+    {bc:'8991234000019',nm:'Kornet Sapi',kat:'Protein & Lauk',hb:15000,hj:18000,stk:25,min:5,sat:'kaleng',em:'🥩'},
+    {bc:'8991234000020',nm:'Indomie Karton',kat:'Mie & Snack',hb:95000,hj:108000,stk:15,min:3,sat:'karton',em:'📦'},
+  ];
+
+  // Insert produk
+  var {data:pRes, error:pErr} = await sb.from('produk').insert(produkData).select();
+  if (pErr) { seedLog('Gagal insert produk: '+pErr.message, false); return; }
+  var NP = pRes; // produk baru
+  seedLog('Produk OK ('+NP.length+'). Membuat transaksi...', null);
+
+  function cari(kata) { return NP.find(function(p){return p.nm.includes(kata);})||NP[0]; }
+  function tglLalu(h,j,m){var d=new Date();d.setDate(d.getDate()-h);d.setHours(j,m,0,0);return d.toISOString();}
+
+  var trxDefs = [
+    {tgl:tglLalu(0,8,15),  its:[{p:cari('Beras Premium'),q:1},{p:cari('Minyak'),q:2},{p:cari('Gula'),q:1}], met:'tunai',   kasir:kasirs[0]},
+    {tgl:tglLalu(0,9,30),  its:[{p:cari('Mie Instan Goreng'),q:5},{p:cari('Telur'),q:1},{p:cari('Kecap'),q:1}], met:'qris', kasir:kasirs[1]},
+    {tgl:tglLalu(0,10,45), its:[{p:cari('Air Mineral'),q:6},{p:cari('Teh'),q:1},{p:cari('Kopi'),q:2}], met:'tunai',   kasir:kasirs[0]},
+    {tgl:tglLalu(0,11,20), its:[{p:cari('Sabun Mandi'),q:3},{p:cari('Sabun Cuci'),q:1},{p:cari('Shampoo'),q:4}], met:'tunai', kasir:kasirs[2]},
+    {tgl:tglLalu(0,13,0),  its:[{p:cari('Susu Kental'),q:2},{p:cari('Sarden'),q:3},{p:cari('Garam'),q:2}], met:'transfer', kasir:kasirs[1]},
+    {tgl:tglLalu(0,14,30), its:[{p:cari('Beras Biasa'),q:1},{p:cari('Minyak'),q:1},{p:cari('Tepung'),q:2}], met:'tunai',   kasir:kasirs[0]},
+    {tgl:tglLalu(0,16,0),  its:[{p:cari('Kornet'),q:2},{p:cari('Mie Instan Kuah'),q:10},{p:cari('Gula'),q:2}], met:'qris', kasir:kasirs[2]},
+    {tgl:tglLalu(1,8,0),   its:[{p:cari('Indomie Karton'),q:1},{p:cari('Minyak'),q:2}], met:'tunai',    kasir:kasirs[0]},
+    {tgl:tglLalu(1,9,45),  its:[{p:cari('Telur'),q:2},{p:cari('Beras Premium'),q:1},{p:cari('Kecap'),q:2}], met:'transfer', kasir:kasirs[1]},
+    {tgl:tglLalu(1,11,0),  its:[{p:cari('Mie Instan Goreng'),q:8},{p:cari('Sabun Mandi'),q:2}], met:'tunai',   kasir:kasirs[0]},
+    {tgl:tglLalu(1,13,30), its:[{p:cari('Air Mineral'),q:12},{p:cari('Susu Kental'),q:3}], met:'qris',   kasir:kasirs[2]},
+    {tgl:tglLalu(1,15,0),  its:[{p:cari('Gula'),q:3},{p:cari('Tepung'),q:2},{p:cari('Garam'),q:3}], met:'tunai',   kasir:kasirs[1]},
+    {tgl:tglLalu(2,8,30),  its:[{p:cari('Beras Biasa'),q:2},{p:cari('Minyak'),q:3}], met:'tunai',    kasir:kasirs[0]},
+    {tgl:tglLalu(2,10,0),  its:[{p:cari('Sarden'),q:4},{p:cari('Kornet'),q:2},{p:cari('Kecap'),q:1}], met:'tunai',   kasir:kasirs[2]},
+    {tgl:tglLalu(2,12,15), its:[{p:cari('Shampoo'),q:6},{p:cari('Sabun Cuci'),q:2}], met:'qris',    kasir:kasirs[1]},
+    {tgl:tglLalu(2,14,0),  its:[{p:cari('Kopi'),q:3},{p:cari('Teh'),q:2},{p:cari('Air Mineral'),q:6}], met:'tunai',   kasir:kasirs[0]},
+    {tgl:tglLalu(3,9,0),   its:[{p:cari('Beras Premium'),q:2},{p:cari('Telur'),q:2},{p:cari('Minyak'),q:1}], met:'transfer', kasir:kasirs[1]},
+    {tgl:tglLalu(3,11,30), its:[{p:cari('Indomie Karton'),q:2},{p:cari('Sabun Mandi'),q:4}], met:'tunai',   kasir:kasirs[0]},
+    {tgl:tglLalu(3,13,0),  its:[{p:cari('Susu Kental'),q:4},{p:cari('Kopi'),q:2},{p:cari('Gula'),q:2}], met:'qris',   kasir:kasirs[2]},
+    {tgl:tglLalu(4,8,0),   its:[{p:cari('Minyak'),q:4},{p:cari('Beras Biasa'),q:1}], met:'tunai',    kasir:kasirs[0]},
+    {tgl:tglLalu(4,10,30), its:[{p:cari('Mie Instan Goreng'),q:12},{p:cari('Garam'),q:4}], met:'tunai',   kasir:kasirs[1]},
+    {tgl:tglLalu(4,15,0),  its:[{p:cari('Telur'),q:3},{p:cari('Sarden'),q:2},{p:cari('Kornet'),q:1}], met:'qris',   kasir:kasirs[2]},
+    {tgl:tglLalu(5,9,15),  its:[{p:cari('Beras Premium'),q:3},{p:cari('Minyak'),q:2},{p:cari('Gula'),q:3}], met:'tunai',   kasir:kasirs[0]},
+    {tgl:tglLalu(5,11,0),  its:[{p:cari('Shampoo'),q:10},{p:cari('Sabun Cuci'),q:3},{p:cari('Sabun Mandi'),q:5}], met:'transfer', kasir:kasirs[1]},
+    {tgl:tglLalu(5,14,30), its:[{p:cari('Susu Kental'),q:5},{p:cari('Teh'),q:3},{p:cari('Kopi'),q:4}], met:'tunai',   kasir:kasirs[2]},
+    {tgl:tglLalu(6,8,45),  its:[{p:cari('Indomie Karton'),q:3}], met:'transfer', kasir:kasirs[0]},
+    {tgl:tglLalu(6,10,0),  its:[{p:cari('Air Mineral'),q:24},{p:cari('Gula'),q:2}], met:'tunai',    kasir:kasirs[1]},
+    {tgl:tglLalu(6,13,30), its:[{p:cari('Beras Biasa'),q:2},{p:cari('Tepung'),q:3},{p:cari('Kecap'),q:2}], met:'qris',   kasir:kasirs[2]},
+  ];
+
+  var trxOK=0;
+  for (var i=0;i<trxDefs.length;i++){
+    var def=trxDefs[i];
+    var items=def.its.map(function(it){return {id:it.p.id,nm:it.p.nm,hb:it.p.hb,hj:it.p.hj,q:it.q,sat:it.p.sat,hjnet:it.p.hj,dis:0};});
+    var sub=items.reduce(function(s,it){return s+it.hj*it.q;},0);
+    var lb=items.reduce(function(s,it){return s+(it.hj-it.hb)*it.q;},0);
+    var byr=def.met==='tunai'?sub+Math.floor(Math.random()*5)*1000:sub;
+    var trxObj={tgl:def.tgl,items:items,sub:sub,dis:0,tot:sub,lb:lb,byr:byr,km:byr-sub,met:def.met,kasir:def.kasir};
+    var {error:tErr}=await sb.from('transaksi').insert(trxObj);
+    if(!tErr)trxOK++;
+  }
+  seedLog('Transaksi OK ('+trxOK+'/'+trxDefs.length+'). Riwayat stok...', null);
+
+  // Stok History
+  var histData=[
+    {tgl:tglLalu(7,7,0),nm:'Beras Premium 5kg',tp:'masuk',q:30,ket:'Stok Masuk dari Supplier ABC'},
+    {tgl:tglLalu(7,7,0),nm:'Minyak Goreng 2L',tp:'masuk',q:24,ket:'Stok Masuk dari Supplier ABC'},
+    {tgl:tglLalu(7,7,0),nm:'Gula Pasir 1kg',tp:'masuk',q:50,ket:'Stok Masuk dari Supplier Sembako Jaya'},
+    {tgl:tglLalu(5,7,0),nm:'Mie Instan Goreng',tp:'masuk',q:100,ket:'Stok Masuk dari Distributor'},
+    {tgl:tglLalu(3,7,0),nm:'Telur Ayam 1 Papan',tp:'masuk',q:20,ket:'Stok Masuk dari Peternak Lokal'},
+    {tgl:tglLalu(2,7,0),nm:'Indomie Karton',tp:'masuk',q:10,ket:'Stok Masuk dari Distributor'},
+    {tgl:tglLalu(1,7,0),nm:'Susu Kental Manis',tp:'masuk',q:48,ket:'Stok Masuk Rutin Mingguan'},
+  ];
+  await sb.from('stok_hist').insert(histData);
+
+  // Reload data
+  await loadAll();
+  seedLog('Selesai! '+NP.length+' produk, '+trxOK+' transaksi, 7 riwayat stok berhasil dimuat.', true);
+  toast('🌱 Data contoh berhasil dimuat! '+NP.length+' produk, '+trxOK+' transaksi','tok');
+}
+
+async function hapusSemua() {
+  if (!confirm('⚠️ HAPUS SEMUA DATA?\n\nIni akan menghapus SEMUA produk, transaksi, dan riwayat stok.\n\nKetik OK untuk lanjutkan.')) return;
+  if (!confirm('Yakin? Semua data akan hilang permanen!')) return;
+  seedLog('Menghapus data...', null);
+  await sb.from('stok_hist').delete().neq('id', 0);
+  await sb.from('transaksi').delete().neq('id', 0);
+  await sb.from('produk').delete().neq('id', 0);
+  P=[]; T=[]; H=[];
+  rdDb(); rdGrid(); rdTbl(); rdStk(); rdLap(); rdPromo();
+  document.getElementById('inf-pr').textContent='0';
+  document.getElementById('inf-tr').textContent='0';
+  seedLog('Semua data berhasil dihapus.', true);
+  toast('🗑️ Semua data berhasil dihapus','tok');
+}
 
 // ============================================================
 // PROMO / DISKON
