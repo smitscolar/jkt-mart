@@ -319,25 +319,62 @@ tr:hover td{background:#f8f9fa}
       </div>
 
       <div class="tab" id="t-lp">
+        <div class="phead"><h3>📒 Laporan & Pembukuan</h3>
           <div style="display:flex;gap:6px">
             <button class="btn br" onclick="expPDF()">📄 PDF</button>
             <button class="btn bg" onclick="expXLS()">📊 Excel</button>
           </div>
         </div>
         <div style="flex:1;overflow-y:auto;padding:12px">
-          <div class="metrics" style="margin-bottom:12px">
-            <div class="mc"><div class="lb">Omset Bulan Ini</div><div class="vl" id="ro">-</div></div>
-            <div class="mc"><div class="lb">Total Transaksi</div><div class="vl" id="rt">-</div></div>
-            <div class="mc"><div class="lb">Laba Kotor</div><div class="vl" style="color:var(--green)" id="rl">-</div></div>
-            <div class="mc"><div class="lb">Rata-rata/Trx</div><div class="vl" id="ra">-</div></div>
-          </div>
+
+          <!-- Filter Periode -->
           <div class="card" style="margin-bottom:10px">
-            <div class="ct">📊 Omset 7 Hari Terakhir</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+              <span style="font-size:12px;font-weight:600;color:var(--muted)">📅 Periode:</span>
+              <button class="btn bsm" id="fp-hari" onclick="setFP('hari')" style="background:var(--blue);color:#fff">Hari Ini</button>
+              <button class="btn bsm" id="fp-minggu" onclick="setFP('minggu')">7 Hari</button>
+              <button class="btn bsm" id="fp-bulan" onclick="setFP('bulan')">Bulan Ini</button>
+              <button class="btn bsm" id="fp-semua" onclick="setFP('semua')">Semua</button>
+              <span style="font-size:12px;color:var(--muted)">atau pilih:</span>
+              <input type="date" class="fi" id="fp-dari" style="width:130px;font-size:11px" onchange="setFP('custom')"/>
+              <span style="font-size:12px">s/d</span>
+              <input type="date" class="fi" id="fp-sto" style="width:130px;font-size:11px" onchange="setFP('custom')"/>
+            </div>
+          </div>
+
+          <!-- Ringkasan Periode -->
+          <div class="metrics" style="margin-bottom:10px">
+            <div class="mc"><div class="lb">💰 Omset</div><div class="vl" id="ro">-</div></div>
+            <div class="mc"><div class="lb">🧾 Transaksi</div><div class="vl" id="rt">-</div></div>
+            <div class="mc"><div class="lb">📈 Laba Kotor</div><div class="vl" style="color:var(--green)" id="rl">-</div></div>
+            <div class="mc"><div class="lb">⌀ Rata-rata/Trx</div><div class="vl" id="ra">-</div></div>
+          </div>
+
+          <!-- Grafik Bar -->
+          <div class="card" style="margin-bottom:10px">
+            <div class="ct">📊 Grafik Omset Harian</div>
             <div class="chwrap" id="chart"></div>
             <div style="height:18px"></div>
           </div>
-          <div class="card" style="margin-bottom:10px"><div class="ct">🗂️ Per Kategori</div><div id="rkat"></div></div>
-          <div class="card"><div class="ct">🧾 Riwayat Transaksi</div><div id="rtrx" style="max-height:280px;overflow-y:auto"></div></div>
+
+          <!-- Pembukuan Harian -->
+          <div class="card" style="margin-bottom:10px">
+            <div class="ct">📒 Pembukuan Harian</div>
+            <div id="rbuku" style="margin-top:8px"></div>
+          </div>
+
+          <!-- Per Kategori -->
+          <div class="card" style="margin-bottom:10px"><div class="ct">🗂️ Penjualan Per Kategori</div><div id="rkat"></div></div>
+
+          <!-- Riwayat Transaksi dengan Edit & Hapus -->
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <div class="ct" style="margin:0">🧾 Riwayat Transaksi</div>
+              <input class="srch" style="width:160px;font-size:11px" placeholder="Cari no/kasir..." oninput="rdLap()" id="trxsrch"/>
+            </div>
+            <div id="rtrx" style="max-height:400px;overflow-y:auto"></div>
+          </div>
+
         </div>
       </div>
 
@@ -418,6 +455,37 @@ tr:hover td{background:#f8f9fa}
 </div>
 
 <!-- MODAL STRUK -->
+<div class="mbg" id="mtrx" style="display:none">
+  <div class="mbox" style="max-width:500px">
+    <div class="mhead"><h3>✏️ Edit / Detail Transaksi</h3><span class="mx" onclick="closeM('mtrx')">✕</span></div>
+    <div style="padding:16px;overflow-y:auto;max-height:70vh">
+      <div id="mtrx-detail"></div>
+      <div style="height:12px"></div>
+      <div class="sc" style="padding:12px;border-radius:8px;background:#f9f9f9;border:1px solid var(--border)">
+        <h4 style="margin:0 0 10px;font-size:13px">⚙️ Koreksi Data</h4>
+        <div class="fr"><label>Total (Rp)</label><input class="fi" id="etrx-tot" type="number"/></div>
+        <div class="fr"><label>Metode Bayar</label>
+          <select class="fi" id="etrx-met">
+            <option value="tunai">💵 Tunai</option>
+            <option value="qris">📱 QRIS</option>
+            <option value="transfer">🏦 Transfer</option>
+          </select>
+        </div>
+        <div class="fr"><label>Kasir</label><input class="fi" id="etrx-kasir"/></div>
+        <div class="fr"><label>Catatan Koreksi</label><input class="fi" id="etrx-ket" placeholder="Alasan koreksi (opsional)"/></div>
+        <div id="etrx-warn" style="font-size:11px;color:var(--red);display:none;margin-top:6px">⚠️ Perubahan total tidak mengubah stok. Pastikan sudah sesuai.</div>
+      </div>
+    </div>
+    <div class="mfoot" style="justify-content:space-between">
+      <button class="btn" style="color:var(--red);border:1px solid var(--red)" onclick="hapTrx()">🗑️ Hapus</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="closeM('mtrx')">Batal</button>
+        <button class="btn bb" onclick="simpanEditTrx()">💾 Simpan Koreksi</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="mbg" id="msk" style="display:none">
   <div class="mbox">
     <div class="mhead"><h3>🧾 Struk</h3><span class="mx" onclick="closeM('msk');rstKs()">✕</span></div>
@@ -808,48 +876,231 @@ async function saveSI(){
 // ============================================================
 // LAPORAN
 // ============================================================
-function rdLap(){
+// ============================================================
+// LAPORAN & PEMBUKUAN
+// ============================================================
+var lapFP='hari'; // filter periode aktif
+var editTrxId=null;
+
+function setFP(mode){
+  lapFP=mode;
+  // reset button style
+  ['hari','minggu','bulan','semua'].forEach(function(m){
+    var el=document.getElementById('fp-'+m);
+    if(el)el.style.cssText=el.style.cssText.replace(/background[^;]+;/g,'');
+  });
+  var btn=document.getElementById('fp-'+mode);
+  if(btn)btn.style.background='var(--blue)',btn.style.color='#fff';
+  rdLap();
+}
+
+function getLapData(){
   var now=new Date();
-  var bln=T.filter(function(x){var d=new Date(x.tgl);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
-  var om=bln.reduce(function(s,x){return s+(x.tot||0);},0);
-  var lb=bln.reduce(function(s,x){return s+(x.lb||0);},0);
+  var dari=document.getElementById('fp-dari');
+  var sto=document.getElementById('fp-sto');
+  return T.filter(function(x){
+    var d=new Date(x.tgl);
+    if(lapFP==='hari'){var nd=new Date();return d.toDateString()===nd.toDateString();}
+    if(lapFP==='minggu'){var w=new Date();w.setDate(w.getDate()-6);w.setHours(0,0,0,0);return d>=w;}
+    if(lapFP==='bulan'){return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}
+    if(lapFP==='custom'){
+      var dr=dari&&dari.value?new Date(dari.value):null;
+      var ds=sto&&sto.value?new Date(sto.value):null;
+      if(ds)ds.setHours(23,59,59,999);
+      if(dr&&d<dr)return false;
+      if(ds&&d>ds)return false;
+      return true;
+    }
+    return true; // semua
+  });
+}
+
+function rdLap(){
+  var data=getLapData();
+  var srch=(document.getElementById('trxsrch')||{}).value||'';
+  if(srch)data=data.filter(function(x){return ('#'+String(x.id).slice(-5)).includes(srch)||(x.kasir||'').toLowerCase().includes(srch.toLowerCase());});
+
+  // Ringkasan
+  var om=data.reduce(function(s,x){return s+(x.tot||0);},0);
+  var lb=data.reduce(function(s,x){return s+(x.lb||0);},0);
   document.getElementById('ro').textContent=rp(om);
-  document.getElementById('rt').textContent=bln.length;
+  document.getElementById('rt').textContent=data.length;
   document.getElementById('rl').textContent=rp(lb);
-  document.getElementById('ra').textContent=rp(bln.length?om/bln.length:0);
-  var days=[];for(var i=6;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);var ds=d.toDateString();var dv=T.filter(function(x){return new Date(x.tgl).toDateString()===ds;}).reduce(function(s,x){return s+(x.tot||0);},0);days.push({lb:d.toLocaleDateString('id-ID',{weekday:'short'}),vl:dv});}
-  var mx=Math.max.apply(null,days.map(function(d){return d.vl;}),1)||1;
-  document.getElementById('chart').innerHTML=days.map(function(d){return '<div class="bar" style="background:var(--blue);height:'+(d.vl?Math.round(d.vl/mx*100):5)+'%;opacity:'+(d.vl?1:0.15)+'"><span class="bvl">'+(d.vl?rpS(d.vl):'')+'</span><span class="blb">'+d.lb+'</span></div>';}).join('');
-  var km={};T.forEach(function(x){(x.items||[]).forEach(function(i){var p=P.find(function(y){return y.id==i.id||y.nm===i.nm;});var k=p?p.kat:'Lainnya';km[k]=(km[k]||0)+i.q*i.hj;});});
+  document.getElementById('ra').textContent=rp(data.length?om/data.length:0);
+
+  // Grafik — ambil max 14 hari unik
+  var dayMap={};
+  data.forEach(function(x){var k=new Date(x.tgl).toDateString();dayMap[k]=(dayMap[k]||0)+(x.tot||0);});
+  var dayKeys=Object.keys(dayMap).sort(function(a,b){return new Date(a)-new Date(b);}).slice(-14);
+  var mx=Math.max.apply(null,dayKeys.map(function(k){return dayMap[k];})) || 1;
+  document.getElementById('chart').innerHTML=dayKeys.length?dayKeys.map(function(k){
+    var d=new Date(k);
+    var lb2=d.toLocaleDateString('id-ID',{day:'2-digit',month:'short'});
+    var vl=dayMap[k];
+    return '<div class="bar" style="background:var(--blue);height:'+Math.round(vl/mx*100)+'%;opacity:'+(vl?1:0.2)+'"><span class="bvl">'+rpS(vl)+'</span><span class="blb">'+lb2+'</span></div>';
+  }).join(''):'<div style="text-align:center;color:var(--muted);font-size:12px;padding:20px">Tidak ada data di periode ini</div>';
+
+  // Pembukuan Harian
+  var bukuMap={};
+  data.forEach(function(x){
+    var tgl=new Date(x.tgl).toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    var key=new Date(x.tgl).toDateString();
+    if(!bukuMap[key])bukuMap[key]={tgl:tgl,trx:[],om:0,lb:0,tunai:0,qris:0,transfer:0};
+    bukuMap[key].trx.push(x);
+    bukuMap[key].om+=(x.tot||0);
+    bukuMap[key].lb+=(x.lb||0);
+    bukuMap[key][x.met]=(bukuMap[key][x.met]||0)+(x.tot||0);
+  });
+  var bukuKeys=Object.keys(bukuMap).sort(function(a,b){return new Date(b)-new Date(a);});
+  document.getElementById('rbuku').innerHTML=bukuKeys.length?bukuKeys.map(function(k){
+    var b=bukuMap[k];
+    return '<div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
+      '<div style="font-size:13px;font-weight:700;color:var(--blue)">📅 '+b.tgl+'</div>'+
+      '<div style="font-size:12px;color:var(--muted)">'+b.trx.length+' transaksi</div></div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px">'+
+      '<div>💰 Omset: <b>'+rp(b.om)+'</b></div>'+
+      '<div>📈 Laba: <b style="color:var(--green)">'+rp(b.lb)+'</b></div>'+
+      (b.tunai?'<div>💵 Tunai: '+rp(b.tunai)+'</div>':'')+
+      (b.qris?'<div>📱 QRIS: '+rp(b.qris)+'</div>':'')+
+      (b.transfer?'<div>🏦 Transfer: '+rp(b.transfer)+'</div>':'')+
+      '</div></div>';
+  }).join(''):'<div style="text-align:center;color:var(--muted);font-size:12px;padding:16px">Tidak ada data di periode ini</div>';
+
+  // Per Kategori
+  var km={};
+  data.forEach(function(x){(x.items||[]).forEach(function(i){var p=P.find(function(y){return y.id==i.id||y.nm===i.nm;});var k=p?p.kat:'Lainnya';km[k]=(km[k]||0)+i.q*(i.hjnet||i.hj);});});
   var ks=Object.entries(km).sort(function(a,b){return b[1]-a[1];});
   document.getElementById('rkat').innerHTML=ks.length?ks.map(function(e){return '<div class="lr"><span>'+e[0]+'</span><span>'+rp(e[1])+'</span></div>';}).join(''):'<div style="font-size:12px;color:var(--muted);padding:8px">Belum ada data</div>';
-  document.getElementById('rtrx').innerHTML=T.length?'<table><thead><tr><th>No</th><th>Waktu</th><th>Total</th><th>Metode</th><th>Kasir</th></tr></thead><tbody>'+T.slice(0,50).map(function(x){return '<tr><td>#'+String(x.id).slice(-5)+'</td><td>'+new Date(x.tgl).toLocaleString('id-ID')+'</td><td>'+rp(x.tot)+'</td><td>'+x.met+'</td><td>'+(x.kasir||'-')+'</td></tr>';}).join('')+'</tbody></table>':'<div style="font-size:12px;color:var(--muted);padding:12px">Belum ada transaksi</div>';
+
+  // Tabel Transaksi dengan tombol Edit & Hapus
+  var sorted=data.slice().sort(function(a,b){return new Date(b.tgl)-new Date(a.tgl);});
+  document.getElementById('rtrx').innerHTML=sorted.length?
+    '<table><thead><tr><th>No</th><th>Tanggal</th><th>Waktu</th><th>Total</th><th>Diskon</th><th>Metode</th><th>Kasir</th><th>Aksi</th></tr></thead><tbody>'+
+    sorted.map(function(x){
+      return '<tr>'+
+        '<td style="font-family:monospace">#'+String(x.id).slice(-5)+'</td>'+
+        '<td>'+new Date(x.tgl).toLocaleDateString('id-ID')+'</td>'+
+        '<td>'+new Date(x.tgl).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})+'</td>'+
+        '<td><b>'+rp(x.tot)+'</b></td>'+
+        '<td style="color:var(--red)">'+(x.dis&&x.dis>0?'-'+rp(x.dis):'-')+'</td>'+
+        '<td>'+x.met+'</td>'+
+        '<td>'+(x.kasir||'-')+'</td>'+
+        '<td style="white-space:nowrap">'+
+          '<button class="btn bsm" onclick="bukaTrx(\''+x.id+'\')">✏️ Edit</button> '+
+          '<button class="btn bsm" style="color:var(--red)" onclick="konfirmHapTrx(\''+x.id+'\')">🗑️</button>'+
+        '</td>'+
+      '</tr>';
+    }).join('')+'</tbody></table>':
+    '<div style="font-size:12px;color:var(--muted);padding:16px;text-align:center">Tidak ada transaksi di periode ini</div>';
+}
+
+function bukaTrx(id){
+  var x=T.find(function(t){return String(t.id)===String(id);});if(!x)return;
+  editTrxId=id;
+  var items=(x.items||[]).map(function(i){
+    return '<div class="lr"><span>'+(i.nm||'-')+' x'+i.q+'</span><span>'+rp((i.hjnet||i.hj)*i.q)+'</span></div>';
+  }).join('');
+  document.getElementById('mtrx-detail').innerHTML=
+    '<div style="font-size:12px;margin-bottom:10px">'+
+    '<div style="font-weight:700;color:var(--blue);margin-bottom:6px">🧾 #'+String(x.id).slice(-5)+' — '+new Date(x.tgl).toLocaleString('id-ID')+'</div>'+
+    '<div style="background:#f5f5f5;border-radius:8px;padding:8px;margin-bottom:8px;max-height:150px;overflow-y:auto">'+items+'</div>'+
+    (x.sub&&x.dis?'<div class="lr"><span style="color:var(--muted)">Subtotal</span><span>'+rp(x.sub)+'</span></div>':'')+ 
+    (x.dis&&x.dis>0?'<div class="lr" style="color:var(--red)"><span>🏷️ Diskon</span><span>-'+rp(x.dis)+'</span></div>':'')+
+    '<div class="lr"><span><b>Total</b></span><span><b>'+rp(x.tot)+'</b></span></div>'+
+    '</div>';
+  document.getElementById('etrx-tot').value=x.tot;
+  document.getElementById('etrx-met').value=x.met||'tunai';
+  document.getElementById('etrx-kasir').value=x.kasir||'';
+  document.getElementById('etrx-ket').value='';
+  document.getElementById('etrx-warn').style.display='block';
+  document.getElementById('mtrx').style.display='flex';
+}
+
+async function simpanEditTrx(){
+  if(!editTrxId){return;}
+  var tot=parseFloat(document.getElementById('etrx-tot').value)||0;
+  var met=document.getElementById('etrx-met').value;
+  var kasir=document.getElementById('etrx-kasir').value.trim();
+  var ket=document.getElementById('etrx-ket').value.trim();
+  var upd={tot:tot,met:met,kasir:kasir};
+  if(ket)upd.ket_koreksi=ket;
+  var {error}=await sb.from('transaksi').update(upd).eq('id',editTrxId);
+  if(error){toast('Gagal menyimpan koreksi!','ter');console.error(error);return;}
+  // Update lokal
+  var idx=T.findIndex(function(t){return String(t.id)===String(editTrxId);});
+  if(idx>=0)Object.assign(T[idx],upd);
+  closeM('mtrx');
+  rdLap();rdDb();
+  toast('Transaksi berhasil dikoreksi ✅','tok');
+}
+
+function konfirmHapTrx(id){
+  var x=T.find(function(t){return String(t.id)===String(id);});
+  if(!x)return;
+  if(!confirm('Hapus transaksi #'+String(x.id).slice(-5)+' — '+rp(x.tot)+'?\n\n⚠️ Stok tidak akan dikembalikan otomatis.'))return;
+  hapTrxById(id);
+}
+
+async function hapTrx(){
+  if(!editTrxId)return;
+  var x=T.find(function(t){return String(t.id)===String(editTrxId);});
+  if(!x)return;
+  if(!confirm('Hapus transaksi #'+String(x.id).slice(-5)+'?\n\n⚠️ Stok tidak akan dikembalikan otomatis.'))return;
+  closeM('mtrx');
+  await hapTrxById(editTrxId);
+}
+
+async function hapTrxById(id){
+  var {error}=await sb.from('transaksi').delete().eq('id',id);
+  if(error){toast('Gagal menghapus transaksi!','ter');console.error(error);return;}
+  T=T.filter(function(t){return String(t.id)!==String(id);});
+  rdLap();rdDb();
+  toast('Transaksi berhasil dihapus 🗑️','tok');
 }
 
 function expPDF(){
   if(typeof window.jspdf==='undefined'){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';s.onload=expPDF;document.head.appendChild(s);toast('Memuat PDF...','tinf');return;}
+  var data=getLapData();
   var {jsPDF}=window.jspdf;var doc=new jsPDF();
   doc.setFontSize(18);doc.setTextColor(26,35,126);doc.text('JKT MART',105,20,{align:'center'});
-  doc.setFontSize(10);doc.setTextColor(100);doc.text('Laporan — '+new Date().toLocaleDateString('id-ID'),105,28,{align:'center'});
-  var y=40;doc.setFontSize(11);doc.setTextColor(0);doc.text('Riwayat Transaksi',14,y);y+=8;
+  doc.setFontSize(10);doc.setTextColor(100);
+  var periodeLabel={'hari':'Hari Ini','minggu':'7 Hari Terakhir','bulan':'Bulan Ini','semua':'Semua','custom':'Custom'};
+  doc.text('Laporan '+periodeLabel[lapFP]+' — Dicetak: '+new Date().toLocaleString('id-ID'),105,28,{align:'center'});
+  var om=data.reduce(function(s,x){return s+(x.tot||0);},0);
+  var lb=data.reduce(function(s,x){return s+(x.lb||0);},0);
+  var y=36;doc.setFontSize(9);doc.setTextColor(0);
+  doc.text('Omset: '+rp(om)+'   |   Laba: '+rp(lb)+'   |   Transaksi: '+data.length,14,y);y+=10;
+  doc.setFontSize(11);doc.text('Riwayat Transaksi',14,y);y+=8;
   doc.setFontSize(9);doc.setTextColor(80);
-  doc.text('No',14,y);doc.text('Waktu',30,y);doc.text('Total',110,y);doc.text('Metode',148,y);doc.text('Kasir',170,y);
+  doc.text('No',14,y);doc.text('Tanggal',30,y);doc.text('Total',100,y);doc.text('Diskon',130,y);doc.text('Metode',152,y);doc.text('Kasir',172,y);
   y+=2;doc.line(14,y,196,y);y+=5;doc.setTextColor(0);
-  T.slice(0,40).forEach(function(x){if(y>270){doc.addPage();y=20;}doc.text('#'+String(x.id).slice(-5),14,y);doc.text(new Date(x.tgl).toLocaleString('id-ID').slice(0,16),30,y);doc.text(rp(x.tot),110,y);doc.text(x.met||'-',148,y);doc.text(x.kasir||'-',170,y);y+=7;});
-  doc.save('JKT-MART-'+new Date().toISOString().slice(0,10)+'.pdf');
+  var sorted=data.slice().sort(function(a,b){return new Date(b.tgl)-new Date(a.tgl);});
+  sorted.slice(0,60).forEach(function(x){if(y>270){doc.addPage();y=20;}doc.text('#'+String(x.id).slice(-5),14,y);doc.text(new Date(x.tgl).toLocaleString('id-ID').slice(0,16),30,y);doc.text(rp(x.tot),100,y);doc.text(x.dis&&x.dis>0?'-'+rp(x.dis):'-',130,y);doc.text(x.met||'-',152,y);doc.text(x.kasir||'-',172,y);y+=7;});
+  doc.save('JKT-MART-'+lapFP+'-'+new Date().toISOString().slice(0,10)+'.pdf');
   toast('PDF berhasil diexport!','tok');
 }
 function expXLS(){
   if(typeof XLSX==='undefined'){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=expXLS;document.head.appendChild(s);toast('Memuat Excel...','tinf');return;}
+  var data=getLapData();
   var wb=XLSX.utils.book_new();
-  var td2=[['No','Waktu','Total','Laba','Metode','Kasir']];
-  T.forEach(function(x){td2.push(['#'+String(x.id).slice(-5),new Date(x.tgl).toLocaleString('id-ID'),x.tot,x.lb,x.met,x.kasir||'-']);});
+  // Sheet 1: Transaksi
+  var td2=[['No','Tanggal','Total','Diskon','Laba','Metode','Kasir','Catatan Koreksi']];
+  var sorted=data.slice().sort(function(a,b){return new Date(b.tgl)-new Date(a.tgl);});
+  sorted.forEach(function(x){td2.push(['#'+String(x.id).slice(-5),new Date(x.tgl).toLocaleString('id-ID'),x.tot,x.dis||0,x.lb||0,x.met,x.kasir||'-',x.ket_koreksi||'']);});
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(td2),'Transaksi');
+  // Sheet 2: Pembukuan Harian
+  var bukuMap={};
+  data.forEach(function(x){var key=new Date(x.tgl).toLocaleDateString('id-ID');if(!bukuMap[key])bukuMap[key]={tgl:key,jml:0,om:0,lb:0,tunai:0,qris:0,transfer:0};bukuMap[key].jml++;bukuMap[key].om+=(x.tot||0);bukuMap[key].lb+=(x.lb||0);bukuMap[key][x.met]=(bukuMap[key][x.met]||0)+(x.tot||0);});
+  var buku=[['Tanggal','Jml Transaksi','Omset','Laba','Tunai','QRIS','Transfer']];
+  Object.values(bukuMap).forEach(function(b){buku.push([b.tgl,b.jml,b.om,b.lb,b.tunai,b.qris,b.transfer]);});
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(buku),'Pembukuan Harian');
+  // Sheet 3: Produk
   var pd2=[['Barcode','Nama','Kategori','H.Beli','H.Jual','Stok','Min','Satuan']];
   P.forEach(function(p){pd2.push([p.bc,p.nm,p.kat,p.hb,p.hj,p.stk,p.min,p.sat]);});
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(pd2),'Produk');
-  XLSX.writeFile(wb,'JKT-MART-'+new Date().toISOString().slice(0,10)+'.xlsx');
-  toast('Excel berhasil diexport!','tok');
+  XLSX.writeFile(wb,'JKT-MART-'+lapFP+'-'+new Date().toISOString().slice(0,10)+'.xlsx');
+  toast('Excel berhasil diexport! ('+data.length+' transaksi)','tok');
 }
 
 // ============================================================
