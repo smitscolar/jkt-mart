@@ -201,6 +201,7 @@ tr:hover td{background:#f8f9fa}
       <div class="ni" id="n-ks" onclick="go('ks')"><span class="ic">🔴</span>Kasir / POS</div>
       <div class="nsec">Inventori</div>
       <div class="ni" id="n-pr" onclick="go('pr')"><span class="ic">📦</span>Produk<span class="nbadge" id="kb">0</span></div>
+      <div class="ni" id="n-bc" onclick="go('bc')"><span class="ic">🏷️</span>Label & Barcode</div>
       <div class="ni" id="n-st" onclick="go('st')"><span class="ic">📋</span>Manajemen Stok</div>
       <div class="nsec">Transaksi</div>
       <div class="ni" id="n-po" onclick="go('po')"><span class="ic">🚚</span>Purchase Order</div>
@@ -284,6 +285,56 @@ tr:hover td{background:#f8f9fa}
           <select class="srch" style="width:140px" onchange="fltK(this.value)" id="kflt"><option value="">Semua Kategori</option></select>
         </div>
         <div class="twrap"><table><thead><tr><th>Barcode</th><th>Nama</th><th>Kategori</th><th>H.Beli</th><th>H.Jual</th><th>Stok</th><th>Min</th><th>Status</th><th></th></tr></thead><tbody id="ptb"></tbody></table></div>
+      </div>
+
+      <div class="tab" id="t-bc">
+        <div class="phead"><h3>🏷️ Label & Barcode</h3>
+          <div style="display:flex;gap:6px">
+            <button class="btn bg bsm" onclick="cetakSemuaLabel()">🖨️ Cetak Semua</button>
+            <button class="btn bb bsm" onclick="resetPilihLabel()">↺ Reset</button>
+          </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:12px">
+          <!-- Generator Barcode Custom -->
+          <div class="card" style="margin-bottom:12px">
+            <div class="ct">🔧 Buat Barcode Custom</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:flex-end">
+              <div style="flex:2;min-width:140px"><label style="font-size:11px;color:var(--muted)">Nama Produk</label><input class="fi" id="bc-nm" placeholder="Contoh: Minyak Goreng 1L"/></div>
+              <div style="flex:1;min-width:100px"><label style="font-size:11px;color:var(--muted)">Harga Jual (Rp)</label><input class="fi" id="bc-hj" type="number" placeholder="15000"/></div>
+              <div style="flex:1;min-width:100px"><label style="font-size:11px;color:var(--muted)">Barcode</label><input class="fi" id="bc-kd" placeholder="8991234..."/></div>
+              <div style="flex:0"><label style="font-size:11px;color:var(--muted)">Jml Label</label><input class="fi" id="bc-jml" type="number" value="1" min="1" max="50" style="width:60px"/></div>
+              <button class="btn bb" onclick="tambahLabelCustom()" style="height:38px">➕ Tambah</button>
+            </div>
+          </div>
+
+          <!-- Pilih dari Produk DB -->
+          <div class="card" style="margin-bottom:12px">
+            <div class="ct" style="margin-bottom:8px">📦 Pilih dari Daftar Produk</div>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <input class="srch" id="bc-srch" placeholder="Cari produk..." oninput="rdBcList()" style="flex:1"/>
+              <button class="btn bsm bg" onclick="pilihSemuaProduk()" style="white-space:nowrap">✅ Pilih Semua</button>
+            </div>
+            <div id="bc-list" style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:4px"></div>
+          </div>
+
+          <!-- Preview Label -->
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <div class="ct" style="margin:0">🖨️ Preview Label Harga (<span id="bc-total">0</span> label)</div>
+              <div style="display:flex;gap:6px">
+                <select class="fi" id="bc-size" style="width:120px;font-size:11px" onchange="rdBcPreview()">
+                  <option value="small">Kecil (4×2 cm)</option>
+                  <option value="medium" selected>Sedang (6×3 cm)</option>
+                  <option value="large">Besar (8×4 cm)</option>
+                </select>
+                <button class="btn bb bsm" onclick="cetakSemuaLabel()">🖨️ Cetak</button>
+              </div>
+            </div>
+            <div id="bc-preview" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:#f5f5f5;border-radius:8px;min-height:60px">
+              <div style="font-size:12px;color:var(--muted);width:100%;text-align:center;padding:20px">Pilih produk atau buat barcode custom di atas</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="tab" id="t-st">
@@ -431,135 +482,49 @@ tr:hover td{background:#f8f9fa}
 
 <!-- MODAL PRODUK -->
 <div class="mbg" id="mp" style="display:none">
-  <div class="mbox">
+  <div class="mbox" style="max-width:500px">
     <div class="mhead"><h3 id="mpt">Tambah Produk</h3><span class="mx" onclick="closeM('mp')">✕</span></div>
-    <div class="fr"><label>Barcode</label><div style="display:flex;gap:5px"><input class="fi" id="pb" style="flex:1"/><button class="btn bb bsm" onclick="autoBC()">⚡ Auto</button></div></div>
-    <div class="fr"><label>Nama Produk *</label><input class="fi" id="pn"/></div>
-    <div class="fr2">
-      <div><label>Emoji / Ikon</label>
-        <select class="fi" id="pem" onchange="rdEmojiPrev()">
-          <option value="🛒">🛒 Umum</option>
-          <option value="🌾">🌾 Beras/Tepung</option>
-          <option value="🫙">🫙 Minyak/Bumbu</option>
-          <option value="🍬">🍬 Gula</option>
-          <option value="🧂">🧂 Garam</option>
-          <option value="🍜">🍜 Mie/Pasta</option>
-          <option value="📦">📦 Karton/Dus</option>
-          <option value="🥚">🥚 Telur</option>
-          <option value="🐟">🐟 Ikan/Sarden</option>
-          <option value="🥩">🥩 Daging/Kornet</option>
-          <option value="🥛">🥛 Susu</option>
-          <option value="☕">☕ Kopi/Teh</option>
-          <option value="💧">💧 Air/Minuman</option>
-          <option value="🧼">🧼 Sabun Mandi</option>
-          <option value="🧴">🧴 Sabun Cair/Shampo</option>
-          <option value="🧻">🧻 Tisu/Kertas</option>
-          <option value="🦷">🦷 Pasta Gigi</option>
-          <option value="🚿">🚿 Deterjen</option>
-          <option value="🍫">🍫 Snack/Coklat</option>
-          <option value="🚬">🚬 Rokok</option>
-          <option value="💊">💊 Obat/Vitamin</option>
-          <option value="🩺">🩺 Kesehatan</option>
-          <option value="🍱">🍱 Makanan Siap Saji</option>
-          <option value="🫘">🫘 Kacang/Biji</option>
-          <option value="🌿">🌿 Rempah/Bumbu</option>
-        </select>
+    <div style="padding:14px;overflow-y:auto;max-height:72vh;display:flex;flex-direction:column;gap:8px">
+      <div class="fr"><label>Barcode</label><div style="display:flex;gap:5px"><input class="fi" id="pb" style="flex:1" placeholder="Scan atau ketik..."/><button class="btn bb bsm" onclick="autoBC()">⚡ Auto</button><button class="btn bsm" style="background:#6c757d;color:#fff" onclick="openBarcodeGen()" title="Buat Label Barcode">🏷️</button></div></div>
+      <div class="fr"><label>Nama Produk *</label><input class="fi" id="pn" placeholder="Contoh: Minyak Goreng Bimoli 1L"/></div>
+      <div class="fr2">
+        <div><label>Emoji</label>
+          <select class="fi" id="pem">
+            <option value="🛒">🛒 Umum</option><option value="🌾">🌾 Beras/Tepung</option><option value="🫙">🫙 Minyak/Bumbu</option><option value="🍬">🍬 Gula</option><option value="🧂">🧂 Garam</option><option value="🍜">🍜 Mie/Pasta</option><option value="📦">📦 Karton/Dus</option><option value="🥚">🥚 Telur</option><option value="🐟">🐟 Ikan/Sarden</option><option value="🥩">🥩 Daging/Kornet</option><option value="🥛">🥛 Susu</option><option value="☕">☕ Kopi/Teh</option><option value="💧">💧 Air/Minuman</option><option value="🧼">🧼 Sabun Mandi</option><option value="🧴">🧴 Sabun Cair/Shampo</option><option value="🧻">🧻 Tisu/Kertas</option><option value="🦷">🦷 Pasta Gigi</option><option value="🚿">🚿 Deterjen</option><option value="🍫">🍫 Snack/Coklat</option><option value="🚬">🚬 Rokok</option><option value="💊">💊 Obat/Vitamin</option><option value="🍱">🍱 Makanan Siap Saji</option><option value="🫘">🫘 Kacang/Biji</option><option value="🌿">🌿 Rempah/Bumbu</option>
+          </select>
+        </div>
+        <div><label>Kategori</label>
+          <select class="fi" id="pk">
+            <optgroup label="── Bahan Pokok ──"><option>Beras & Tepung</option><option>Minyak Goreng</option><option>Gula & Garam</option><option>Bumbu & Rempah</option><option>Mie & Pasta</option></optgroup>
+            <optgroup label="── Protein & Lauk ──"><option>Telur & Susu</option><option>Ikan & Seafood</option><option>Daging & Unggas</option><option>Tahu & Tempe</option></optgroup>
+            <optgroup label="── Minuman ──"><option>Air Mineral</option><option>Kopi & Teh</option><option>Susu & Minuman Kotak</option><option>Minuman Ringan</option></optgroup>
+            <optgroup label="── Snack & Jajanan ──"><option>Snack & Keripik</option><option>Biskuit & Roti</option><option>Permen & Coklat</option></optgroup>
+            <optgroup label="── Kebersihan ──"><option>Sabun & Perawatan</option><option>Deterjen & Pembersih</option><option>Tisu & Kertas</option><option>Pasta Gigi & Sikat</option></optgroup>
+            <optgroup label="── Lainnya ──"><option>Rokok</option><option>Obat & Kesehatan</option><option>Alat Tulis</option><option>Lainnya</option></optgroup>
+          </select>
+        </div>
       </div>
-      <div><label>Kategori</label>
-        <select class="fi" id="pk">
-          <optgroup label="── Bahan Pokok ──">
-            <option>Beras & Tepung</option>
-            <option>Minyak Goreng</option>
-            <option>Gula & Garam</option>
-            <option>Bumbu & Rempah</option>
-            <option>Mie & Pasta</option>
-          </optgroup>
-          <optgroup label="── Protein & Lauk ──">
-            <option>Telur & Susu</option>
-            <option>Ikan & Seafood</option>
-            <option>Daging & Unggas</option>
-            <option>Tahu & Tempe</option>
-          </optgroup>
-          <optgroup label="── Minuman ──">
-            <option>Air Mineral</option>
-            <option>Kopi & Teh</option>
-            <option>Susu & Minuman Kotak</option>
-            <option>Minuman Ringan</option>
-          </optgroup>
-          <optgroup label="── Snack & Jajanan ──">
-            <option>Snack & Keripik</option>
-            <option>Biskuit & Roti</option>
-            <option>Permen & Coklat</option>
-          </optgroup>
-          <optgroup label="── Kebersihan ──">
-            <option>Sabun & Perawatan</option>
-            <option>Deterjen & Pembersih</option>
-            <option>Tisu & Kertas</option>
-            <option>Pasta Gigi & Sikat</option>
-          </optgroup>
-          <optgroup label="── Lainnya ──">
-            <option>Rokok</option>
-            <option>Obat & Kesehatan</option>
-            <option>Alat Tulis</option>
-            <option>Lainnya</option>
-          </optgroup>
-        </select>
+      <div class="fr2">
+        <div><label>Harga Beli (Rp)</label><input class="fi" id="phb" type="number" placeholder="0" oninput="hitungMargin()"/></div>
+        <div><label>Harga Jual (Rp)</label><input class="fi" id="phj" type="number" placeholder="0" oninput="hitungMargin()"/></div>
       </div>
-    </div>
-    <div class="fr2">
-      <div><label>Harga Beli (Rp)</label><input class="fi" id="phb" type="number" placeholder="Contoh: 10000"/></div>
-      <div><label>Harga Jual (Rp)</label><input class="fi" id="phj" type="number" placeholder="Contoh: 12000"/></div>
-    </div>
-    <div class="fr2">
-      <div><label>Stok Awal</label><input class="fi" id="ps" type="number" placeholder="0"/></div>
-      <div><label>Stok Minimum</label><input class="fi" id="pm" type="number" value="5"/></div>
-    </div>
-    <div class="fr2">
-      <div><label>Satuan</label>
-        <select class="fi" id="psat" onchange="rdSatuanCustom()">
-          <optgroup label="── Berat ──">
-            <option value="gram">gram</option>
-            <option value="ons">ons (100gr)</option>
-            <option value="kg">kg</option>
-            <option value="kwintal">kwintal</option>
-            <option value="ton">ton</option>
-          </optgroup>
-          <optgroup label="── Volume ──">
-            <option value="ml">ml</option>
-            <option value="liter">liter</option>
-          </optgroup>
-          <optgroup label="── Kemasan ──">
-            <option value="pcs">pcs / buah</option>
-            <option value="lusin">lusin (12 pcs)</option>
-            <option value="bungkus">bungkus</option>
-            <option value="sachet">sachet</option>
-            <option value="botol">botol</option>
-            <option value="kaleng">kaleng</option>
-            <option value="kotak">kotak</option>
-            <option value="pak">pak</option>
-            <option value="renceng">renceng</option>
-            <option value="papan">papan</option>
-            <option value="ikat">ikat</option>
-            <option value="gulung">gulung</option>
-          </optgroup>
-          <optgroup label="── Karton/Besar ──">
-            <option value="dus">dus</option>
-            <option value="karton">karton</option>
-            <option value="karung">karung</option>
-            <option value="bal">bal</option>
-            <option value="krat">krat</option>
-          </optgroup>
-          <optgroup label="── Lainnya ──">
-            <option value="porsi">porsi</option>
-            <option value="ekor">ekor</option>
-            <option value="lembar">lembar</option>
-            <option value="meter">meter</option>
-            <option value="lainnya">— Ketik sendiri —</option>
-          </optgroup>
-        </select>
+      <div class="fr2">
+        <div><label>Stok Awal</label><input class="fi" id="ps" type="number" placeholder="0"/></div>
+        <div><label>Stok Minimum</label><input class="fi" id="pm" type="number" value="5"/></div>
       </div>
-      <div id="frSatuanCustom" style="display:none"><label>Satuan Lain</label><input class="fi" id="psatCustom" placeholder="Contoh: jerigen"/></div>
-      <div><label>Margin Laba</label><div class="fi" id="pmargin" style="background:#f8f9fa;color:var(--green);font-weight:600;display:flex;align-items:center">-</div></div>
+      <div class="fr2">
+        <div><label>Satuan</label>
+          <select class="fi" id="psat" onchange="rdSatuanCustom()">
+            <optgroup label="── Berat ──"><option value="gram">gram</option><option value="ons">ons (100gr)</option><option value="kg">kg</option><option value="kwintal">kwintal</option></optgroup>
+            <optgroup label="── Volume ──"><option value="ml">ml</option><option value="liter">liter</option></optgroup>
+            <optgroup label="── Kemasan ──"><option value="pcs">pcs / buah</option><option value="bungkus">bungkus</option><option value="sachet">sachet</option><option value="botol">botol</option><option value="kaleng">kaleng</option><option value="kotak">kotak</option><option value="pak">pak</option><option value="renceng">renceng</option><option value="papan">papan</option><option value="gulung">gulung</option></optgroup>
+            <optgroup label="── Karton/Besar ──"><option value="dus">dus</option><option value="karton">karton</option><option value="karung">karung</option><option value="bal">bal</option></optgroup>
+            <optgroup label="── Lainnya ──"><option value="porsi">porsi</option><option value="ekor">ekor</option><option value="lembar">lembar</option><option value="lainnya">— Ketik sendiri —</option></optgroup>
+          </select>
+        </div>
+        <div id="frSatuanCustom" style="display:none"><label>Satuan Lain</label><input class="fi" id="psatCustom" placeholder="Contoh: jerigen"/></div>
+        <div><label>Margin Laba</label><div class="fi" id="pmargin" style="background:#f0fff4;color:var(--green);font-weight:700;display:flex;align-items:center;font-size:13px">-</div></div>
+      </div>
     </div>
     <div class="mfoot"><button class="btn" onclick="closeM('mp')">Batal</button><button class="btn bb" id="savepbtn" onclick="saveProd()">💾 Simpan</button></div>
   </div>
@@ -836,20 +801,21 @@ function tutupWelcome(){
 // ============================================================
 // NAV
 // ============================================================
-var tabs=['db','ks','pr','st','po','sp','pl','pm','lp','pg'];
+var tabs=['db','ks','pr','bc','st','po','sp','pl','pm','lp','pg'];
 function go(id){
   tabs.forEach(function(t){document.getElementById('t-'+t).classList.remove('on');document.getElementById('n-'+t).classList.remove('on');});
   document.getElementById('t-'+id).classList.add('on');
   document.getElementById('n-'+id).classList.add('on');
-  if(id==='db')rdDb();
-  if(id==='ks')rdGrid();
-  if(id==='pr')rdTbl();
-  if(id==='st')rdStk();
-  if(id==='lp')rdLap();
-  if(id==='sp')rdSp();
-  if(id==='pl')rdPl();
-  if(id==='pm')rdPromo();
-  if(id==='pg'){document.getElementById('inf-pr').textContent=P.length;document.getElementById('inf-tr').textContent=T.length;rdAdmList();}
+  if(id==='db')try{rdDb();}catch(e){}
+  if(id==='ks')try{rdGrid();}catch(e){}
+  if(id==='pr')try{rdTbl();}catch(e){}
+  if(id==='bc')try{rdBcList();}catch(e){}
+  if(id==='st')try{rdStk();}catch(e){}
+  if(id==='lp')try{rdLap();}catch(e){}
+  if(id==='sp')try{rdSp();}catch(e){}
+  if(id==='pl')try{rdPl();}catch(e){}
+  if(id==='pm')try{rdPromo();}catch(e){}
+  if(id==='pg'){var el=document.getElementById('inf-pr');if(el)el.textContent=P.length;var el2=document.getElementById('inf-tr');if(el2)el2.textContent=T.length;try{rdAdmList();}catch(e){}}
 }
 
 // ============================================================
@@ -1852,6 +1818,135 @@ function rdPromo(){
       '<button class="btn bsm" style="color:var(--red)" onclick="hapPromo('+i+')">🗑️</button>'+
       '</div></div></div>';
   }).join('');
+}
+
+// ============================================================
+// LABEL & BARCODE — Generator Label Harga ala Indomaret
+// ============================================================
+var bcItems=[];
+
+function barcodeBarsSVG(code){
+  var bars='';var x=8;
+  var str=String(code).padEnd(13,'0');
+  for(var i=0;i<str.length;i++){
+    var w=2+(str.charCodeAt(i)%3);
+    bars+='<rect x="'+x+'" y="2" width="'+w+'" height="22" fill="'+(i%2===0?'#000':'#fff')+'"/>';
+    x+=w+1;
+  }
+  return '<svg width="'+(x+8)+'" height="28" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#fff"/>'+bars+'</svg>';
+}
+
+function makeLabelHTML(item,size){
+  var sz={small:{w:120,h:60,fs:8,fsh:14},medium:{w:170,h:90,fs:10,fsh:18},large:{w:226,h:120,fs:11,fsh:22}};
+  var s=sz[size]||sz.medium;
+  return '<div style="width:'+s.w+'px;height:'+s.h+'px;border:1.5px solid #222;border-radius:3px;background:#fff;padding:4px 5px;box-sizing:border-box;display:inline-flex;flex-direction:column;justify-content:space-between;font-family:Arial,sans-serif;overflow:hidden;margin:3px;vertical-align:top">'+
+    '<div style="font-size:'+s.fs+'px;font-weight:700;line-height:1.2;color:#111;overflow:hidden;max-height:'+(s.h*0.3)+'px">JKT MART</div>'+
+    '<div style="font-size:'+s.fs+'px;color:#333;overflow:hidden;flex:1;line-height:1.2">'+item.nm+'</div>'+
+    '<div style="text-align:center;font-size:'+s.fsh+'px;font-weight:900;color:#c62828">'+rp(item.hj)+'</div>'+
+    '<div style="text-align:center;line-height:1">'+barcodeBarsSVG(item.bc)+'</div>'+
+    '<div style="text-align:center;font-size:7px;color:#555;letter-spacing:0.5px">'+item.bc+'</div>'+
+  '</div>';
+}
+
+function rdBcList(){
+  var srch=(document.getElementById('bc-srch')||{}).value||'';
+  var el=document.getElementById('bc-list');if(!el)return;
+  var filtered=P.filter(function(p){return !srch||p.nm.toLowerCase().includes(srch.toLowerCase())||(p.bc||'').includes(srch);});
+  if(!filtered.length){el.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">Belum ada produk. Tambah produk dulu!</div>';return;}
+  el.innerHTML=filtered.map(function(p){
+    var inBc=bcItems.find(function(b){return b.bc===p.bc;});
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid #f0f0f0;font-size:12px">'+
+      '<input type="checkbox" '+(inBc?'checked':'')+' onchange="toggleBcItem(\''+p.id+'\')" style="width:16px;height:16px;cursor:pointer"/>'+
+      '<span style="flex:1">'+(p.em||'📦')+' '+p.nm+'</span>'+
+      '<span style="color:var(--blue);font-weight:700;white-space:nowrap">'+rp(p.hj)+'</span>'+
+      '<input type="number" min="1" max="50" value="'+(inBc?inBc.qty:1)+'" style="width:44px;font-size:11px;border:1px solid var(--border);border-radius:4px;padding:2px 4px;text-align:center" onchange="ubahQtyLabel(\''+p.id+'\',this.value)"/>'+
+      '<span style="font-size:10px;color:var(--muted)">lbr</span>'+
+    '</div>';
+  }).join('');
+}
+
+function toggleBcItem(pid){
+  var p=P.find(function(x){return x.id==pid;});if(!p)return;
+  var idx=bcItems.findIndex(function(b){return b.bc===p.bc;});
+  if(idx>=0)bcItems.splice(idx,1);else bcItems.push({nm:p.nm,hj:p.hj,bc:p.bc||'0000000000000',qty:1});
+  rdBcList();rdBcPreview();
+}
+
+function ubahQtyLabel(pid,qty){
+  var p=P.find(function(x){return x.id==pid;});if(!p)return;
+  var item=bcItems.find(function(b){return b.bc===p.bc;});
+  if(item){item.qty=parseInt(qty)||1;rdBcPreview();}
+}
+
+function pilihSemuaProduk(){
+  bcItems=P.map(function(p){return {nm:p.nm,hj:p.hj,bc:p.bc||'0000000000000',qty:1};});
+  rdBcList();rdBcPreview();
+}
+
+function resetPilihLabel(){bcItems=[];rdBcList();rdBcPreview();}
+
+function tambahLabelCustom(){
+  var nm=document.getElementById('bc-nm').value.trim();
+  var hj=parseFloat(document.getElementById('bc-hj').value)||0;
+  var bc=document.getElementById('bc-kd').value.trim()||('8'+Math.floor(Math.random()*1e12).toString().padStart(12,'0'));
+  var qty=parseInt(document.getElementById('bc-jml').value)||1;
+  if(!nm){toast('Isi nama produk!','ter');return;}
+  if(!hj){toast('Isi harga jual!','ter');return;}
+  bcItems.push({nm:nm,hj:hj,bc:bc,qty:qty});
+  document.getElementById('bc-nm').value='';
+  document.getElementById('bc-hj').value='';
+  document.getElementById('bc-kd').value='';
+  rdBcPreview();
+  toast('Label ditambahkan! '+bcItems.reduce(function(s,b){return s+(b.qty||1);},0)+' total label','tok');
+}
+
+function rdBcPreview(){
+  var size=(document.getElementById('bc-size')||{}).value||'medium';
+  var el=document.getElementById('bc-preview');
+  var totalEl=document.getElementById('bc-total');
+  if(!bcItems.length){
+    if(el)el.innerHTML='<div style="font-size:12px;color:var(--muted);width:100%;text-align:center;padding:20px">Pilih produk atau buat barcode custom di atas</div>';
+    if(totalEl)totalEl.textContent='0';return;
+  }
+  var total=bcItems.reduce(function(s,b){return s+(b.qty||1);},0);
+  if(totalEl)totalEl.textContent=total;
+  var html='';
+  bcItems.forEach(function(item){
+    var qty=Math.min(item.qty||1,8);
+    for(var i=0;i<qty;i++){html+=makeLabelHTML(item,size);}
+    if((item.qty||1)>8)html+='<span style="font-size:11px;color:var(--muted);display:inline-flex;align-items:center;margin:3px">...+'+(item.qty-8)+' lagi</span>';
+  });
+  if(el)el.innerHTML=html;
+}
+
+function openBarcodeGen(){
+  var bc=document.getElementById('pb').value.trim();
+  var nm=document.getElementById('pn').value.trim();
+  var hj=document.getElementById('phj').value;
+  if(bc)document.getElementById('bc-kd').value=bc;
+  if(nm)document.getElementById('bc-nm').value=nm;
+  if(hj)document.getElementById('bc-hj').value=hj;
+  go('bc');
+}
+
+function cetakSemuaLabel(){
+  if(!bcItems.length){toast('Pilih produk dulu!','ter');return;}
+  var size=(document.getElementById('bc-size')||{}).value||'medium';
+  var labels='';
+  bcItems.forEach(function(item){for(var i=0;i<(item.qty||1);i++){labels+=makeLabelHTML(item,size);}});
+  var total=bcItems.reduce(function(s,b){return s+(b.qty||1);},0);
+  var w=window.open('','_blank','width=1000,height=750');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Label Harga JKT MART</title>');
+  w.document.write('<style>body{margin:8px;font-family:Arial;background:#fff}@media print{.nopr{display:none}@page{margin:5mm;size:A4}}</style></head><body>');
+  w.document.write('<div class="nopr" style="margin-bottom:10px;display:flex;gap:10px;align-items:center;background:#f0f0f0;padding:10px;border-radius:8px">');
+  w.document.write('<b style="font-size:15px">🏷️ JKT MART — '+total+' Label Harga</b>');
+  w.document.write('<button onclick="window.print()" style="background:#1A237E;color:#fff;border:none;padding:8px 24px;border-radius:6px;cursor:pointer;font-size:14px;font-weight:700">🖨️ CETAK / SAVE PDF</button>');
+  w.document.write('<button onclick="window.close()" style="background:#666;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer">✕ Tutup</button>');
+  w.document.write('<span style="font-size:11px;color:#666">Tip: Pilih "Save as PDF" untuk simpan file PDF</span>');
+  w.document.write('</div>');
+  w.document.write('<div style="display:flex;flex-wrap:wrap">'+labels+'</div></body></html>');
+  w.document.close();
+  toast('🖨️ Halaman label dibuka! Klik Cetak / Save PDF','tok');
 }
 </script>
 </body>
