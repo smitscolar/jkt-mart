@@ -585,7 +585,17 @@ async function initSupabase() {
   document.getElementById('s-sburl').textContent = SB_URL.replace('https://','').split('.')[0]+'...';
 }
 
-initSupabase();
+// Init Supabase async, tidak block halaman
+initSupabase().catch(()=>{});
+
+// Default status setelah 3 detik jika masih connecting
+setTimeout(() => {
+  const el = document.getElementById('sbLoginStatus');
+  if (el && el.textContent.includes('Menghubungkan')) {
+    el.className = 'sb-status sb-err';
+    el.textContent = '⚡ Mode Offline — Data tersimpan di browser';
+  }
+}, 3000);
 
 // ============================================================
 // DATA LOKAL (FALLBACK)
@@ -668,21 +678,31 @@ async function doLogin() {
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value;
   const err = document.getElementById('loginErr');
+  const btn = document.querySelector('.login-btn');
 
-  // Cek admin lokal
-  const admin = adminDB.find(a => a.username === u && a.password === p);
+  // Reload adminDB fresh dari localStorage
+  const freshAdmin = JSON.parse(localStorage.getItem('jktmart_admin') || 'null') || [{username:'admin',password:'jktmart2025',nama:'Administrator'}];
+
+  // Cek credentials
+  const admin = freshAdmin.find(a => a.username === u && a.password === p);
   if (admin) {
+    btn.textContent = '⏳ Memuat...';
+    btn.disabled = true;
     currentUser = admin;
+    adminDB = freshAdmin;
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'flex';
     document.getElementById('userLabel').textContent = admin.nama || admin.username;
     await loadAllData();
+    btn.textContent = '🔐 Masuk';
+    btn.disabled = false;
     showToast('Selamat datang, ' + (admin.nama || admin.username) + '!', 'ok');
     return;
   }
 
   err.style.display = 'block';
-  setTimeout(() => err.style.display = 'none', 3000);
+  err.textContent = 'Username atau password salah! (Demo: admin / jktmart2025)';
+  setTimeout(() => err.style.display = 'none', 4000);
 }
 
 function doLogout() {
